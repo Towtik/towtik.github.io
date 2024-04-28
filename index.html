@@ -1,14 +1,13 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Coming Soon!</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add this for responsive scaling -->
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@700&display=swap');
-
 
         body {
             margin: 0;
@@ -21,7 +20,6 @@
             flex-direction: column;
         }
 
-
         h1 {
             font-family: 'Dosis', sans-serif;
             font-weight: bold;
@@ -31,26 +29,16 @@
             margin-bottom: 0;
         }
 
-
         hr {
-            width: 15%; 
-            border: 0; 
-            border-top: 0.5px solid #848d97;
+            width: 15%;
+            border: 0;
+            border-top: 0.5px solid #404041;
             margin: 10px 0;
-        }
-
-
-        p {
-            font-family: 'Dosis', sans-serif;
-            font-size: 1em; 
-            text-align: center;
-            color: #FFF;
-            margin-top: 0;
         }
 
         .youtube-button {
             background-color: #ff0000;
-            color: #FFF; 
+            color: #FFF;
             text-decoration: none;
             border: none;
             border-radius: 15px;
@@ -67,8 +55,9 @@
             transform: scale(1.1);
             color: #FFF;
         }
+
         .towtik-studios {
-            color: #898484; 
+            color: #898484;
             text-decoration: none;
             border: none;
             border-radius: 15px;
@@ -78,14 +67,34 @@
             font-weight: bold;
             margin-top: 10px;
         }
+
+
+        @media (max-width: 900px) {
+            body {
+                padding: 20px; 
+                font-size: 1.5em; /
+            }
+
+            h1 {
+                font-size: 2.5em; 
+            }
+
+            .youtube-button {
+                font-size: 18px; 
+                padding: 15px 25px; 
+            }
+
+            .towtik-studios {
+                font-size: 18px; 
+                padding: 15px 25px; 
+            }
+        }
     </style>
 </head>
 <body>
     <h1>Coming Soon!</h1>
-
-   <a class="towtik-studios">Towtik Studios</a>
-    <hr />    
-
+    <a class="towtik-studios">Towtik Studios</a>
+    <hr />
     <a href="https://www.youtube.com/@towtik/" target="_blank" class="youtube-button">YouTube</a>
 </body>
 </html>
