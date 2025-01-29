@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Thumbnail Generator</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: white;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #thumbnail-container {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            overflow: hidden;
+            border: 4px solid black;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            display: none;
+            transition: transform 0.5s ease;
+            background-color: #333;
+        }
+
+        #thumbnail-container.show {
+            display: block;
+            transform: scale(1);
+        }
+
+        #thumbnail-container img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(10px);
+        }
+
+        #thumbnail-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            padding: 0 20px;
+            width: 80%;
+            transition: font-size 0.3s ease, font-family 0.3s ease;
+        }
+
+        #input-section {
+            margin-top: 20px;
+            text-align: center;
+            animation: slideInUp 1s ease;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        #input-text, #font-select, #font-size {
+            padding: 12px;
+            font-size: 18px;
+            width: 60%;
+            margin-top: 10px;
+            border: 2px solid black;
+            border-radius: 8px;
+            background-color: #444;
+            color: white;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        #input-text:focus, #font-select:focus, #font-size:focus {
+            border-color: black;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+            outline: none;
+        }
+
+        #generate-button, #download-button {
+            padding: 12px 25px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            border: none;
+            margin-top: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #generate-button:hover, #download-button:hover {
+            background-color: #555;
+            transform: translateY(-3px);
+        }
+
+        #download-button {
+            display: none;
+        }
+
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="thumbnail-container" class="show">
+    <img id="background-image">
+    <div id="thumbnail-text">Your Thumbnail Text Here</div>
+</div>
+
+<div id="input-section">
+<input type="text" id="input-text" placeholder="Enter your text here..." style="width: 30%;">
+
+    <select id="font-select"" style="width: 30%;">
+        <option value="Roboto" selected>Roboto</option>
+        <!-- Additional fonts will be loaded dynamically via JavaScript -->
+    </select>
+
+    <label for="font-size">Font Size:</label>
+    <input type="range" id="font-size" min="20" max="120" value="60">
+    
+    <button id="generate-button">Generate Thumbnail</button>
+    <button id="download-button">Download Thumbnail</button>
+</div>
+
+<canvas id="thumbnail-canvas" width="1280" height="720"></canvas>
+
+<script>
+    const canvas = document.getElementById('thumbnail-canvas');
+    const ctx = canvas.getContext('2d');
+    const unsplashApiKey = 'IeadiaSXxDtLJVERyMxL3-7l1mpUPdJySuLHT_zfMGI'; // Replace with your Unsplash API key
+
+    // Dynamically load Google Fonts
+    WebFont.load({
+        google: {
+            families: ['Roboto:400,700']
+        },
+        active: function() {
+            populateFontSelect();
+        }
+    });
+
+    function populateFontSelect() {
+        const fontSelect = document.getElementById('font-select');
+        const fonts = [
+            'Lato', 'Open Sans', 'Montserrat', 'Raleway', 'Merriweather', 'PT Sans', 'Ubuntu', 'Poppins', 'Source Sans Pro'
+        ];
+
+        fonts.forEach(font => {
+            const option = document.createElement('option');
+            option.value = font;
+            option.textContent = font;
+            fontSelect.appendChild(option);
+            WebFont.load({
+                google: {
+                    families: [font + ':400,700']
+                }
+            });
+        });
+    }
+
+    document.getElementById('generate-button').addEventListener('click', function() {
+        const inputText = document.getElementById('input-text').value;
+        const selectedFont = document.getElementById('font-select').value;
+        const fontSize = document.getElementById('font-size').value;
+        const thumbnailTextElement = document.getElementById('thumbnail-text');
+
+        // Update the text, font, and size in the thumbnail container immediately
+        thumbnailTextElement.textContent = inputText;
+        thumbnailTextElement.style.fontFamily = selectedFont;
+        thumbnailTextElement.style.fontSize = fontSize + 'px';
+
+        // Fetch an image from Unsplash based on the input text
+        fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(inputText)}&client_id=${unsplashApiKey}`)
+            .then(response => response.json())
+            .then(data => {
+                const imageUrl = data.urls.regular;
+
+                const backgroundImage = new Image();
+                backgroundImage.crossOrigin = "anonymous"; // Handle CORS
+                backgroundImage.src = imageUrl;
+
+                backgroundImage.onload = function() {
+                    // Draw the image onto the canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                    ctx.filter = 'blur(10px)';
+                    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                    ctx.filter = 'none';
+
+                    // Draw the text onto the canvas
+                    ctx.font = `bold ${fontSize}px ${selectedFont}`;
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 10;
+                    ctx.fillText(inputText, canvas.width / 2, canvas.height / 2);
+
+                    // Show the download button
+                    document.getElementById('download-button').style.display = 'inline-block';
+                };
+
+                // Display the image in the container and update text
+                document.getElementById('thumbnail-container').classList.add('show');
+                document.getElementById('background-image').src = imageUrl;
+            })
+            .catch(error => {
+                console.error('Error fetching the image:', error);
+                alert('Failed to load image. Please try again.');
+            });
+    });
+
+    document.getElementById('download-button').addEventListener('click', function() {
+        const link = document.createElement('a');
+        link.download = 'thumbnail.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+</script>
+
+</body>
+</html>
