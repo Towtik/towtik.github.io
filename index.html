@@ -1,100 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Coming Soon!</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add this for responsive scaling -->
+<meta charset="UTF-8">
+<title>MARTY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@700&display=swap');
+<style>
+/* ---------- RESET ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, Arial, sans-serif;
+  color: #e5e7eb;
+  background: #050208;
+  overflow-x: hidden;
+}
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0d1117;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
+/* ---------- BACKGROUND ---------- */
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
 
-        h1 {
-            font-family: 'Dosis', sans-serif;
-            font-weight: bold;
-            font-size: 2em;
-            text-align: center;
-            color: #FFF;
-            margin-bottom: 0;
-        }
+/* ---------- COMMON STYLES ---------- */
+.glass {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(168,85,247,0.2);
+}
 
-        hr {
-            width: 15%;
-            border: 0;
-            border-top: 0.5px solid #404041;
-            margin: 10px 0;
-        }
+.purple-glow {
+  color: #c084fc;
+  text-shadow: 0 0 8px rgba(168,85,247,0.8);
+}
 
-        .youtube-button {
-            background-color: #ff0000;
-            color: #FFF;
-            text-decoration: none;
-            border: none;
-            border-radius: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-family: 'Dosis', sans-serif;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 20px;
-        }
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 32px;
+}
 
-        .youtube-button:hover {
-            transform: scale(1.1);
-            color: #FFF;
-        }
+/* ---------- HEADER ---------- */
+header {
+  text-align: center;
+  margin-bottom: 48px;
+}
 
-        .towtik-studios {
-            color: #898484;
-            text-decoration: none;
-            border: none;
-            border-radius: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-family: 'Dosis', sans-serif;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+.logo {
+  width: 80px;
+  height: 80px;
+  background: #4c1d95;
+  border: 2px solid #a855f7;
+  border-radius: 20px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(168,85,247,0.4);
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.logo:hover { transform: scale(1.1); }
 
+.logo span {
+  font-size: 32px;
+  font-weight: bold;
+}
 
-        @media (max-width: 900px) {
-            body {
-                padding: 20px; 
-                font-size: 1.5em; /
-            }
+/* ---------- NAV ---------- */
+nav {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  overflow-x: auto;
+  margin-bottom: 32px;
+}
 
-            h1 {
-                font-size: 1.5em; 
-            }
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
 
-            .youtube-button {
-                font-size: 18px; 
-                padding: 15px 25px; 
-            }
+.nav-link:hover {
+  color: white;
+  background: rgba(255,255,255,0.05);
+}
 
-            .towtik-studios {
-                font-size: 18px; 
-                padding: 15px 25px; 
-            }
-        }
-    </style>
+.nav-active {
+  background: rgba(88,28,135,0.4);
+  color: white;
+}
+
+/* ---------- MAIN ---------- */
+.grid {
+  display: grid;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+
+.section {
+  padding: 32px;
+}
+
+.tags span {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 999px;
+  background: rgba(88,28,135,0.4);
+  border: 1px solid rgba(168,85,247,0.3);
+  color: #d8b4fe;
+  margin-right: 6px;
+}
+
+/* ---------- BUTTONS ---------- */
+.jump-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 16px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.jump-btn:hover {
+  background: rgba(88,28,135,0.4);
+  border-color: rgba(168,85,247,0.5);
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  margin-top: 80px;
+  padding: 32px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+  border-top: 1px solid rgba(168,85,247,0.2);
+}
+
+/* ---------- ICONS ---------- */
+.icon {
+  width: 18px;
+  height: 18px;
+  fill: #c084fc;
+}
+</style>
 </head>
 <body>
-    <h1>Coming Soon!</h1>
-    <a class="towtik-studios">Towtik Studios</a>
-    <hr />
-    <a href="https://www.youtube.com/@towtik/" target="_blank" class="youtube-button">YouTube</a>
+
+<canvas id="void"></canvas>
+
+<div class="container">
+
+<header>
+  <div class="logo" onclick="go('/')"><span>M</span></div>
+  <h1 class="purple-glow" style="font-size:48px;">MARTY</h1>
+  <p style="color:#94a3b8;">marti.</p>
+</header>
+
+<nav class="glass">
+  <div class="nav-link nav-active" onclick="go('/')">
+    🏠 Home
+  </div>
+  <div class="nav-link" onclick="go('/darts')">
+    🎯 Darts
+  </div>
+  <div class="nav-link" onclick="go('/minecraft')">
+    📦 Minecraft
+  </div>
+</nav>
+
+<main class="grid">
+
+<section class="glass section">
+  <h2 class="purple-glow">👤 Marty's websit e</h2>
+  <p style="margin:16px 0;color:#cbd5f5;">
+    Clicking any icon performs a page redirect, so beaware ok. Also known as Towtik
+  </p>
+  <div class="tags">
+    <span>🌈⃠  Straight</span>
+    <span>Marty</span>
+    <span>i think im marty</span>
+  </div>
+</section>
+
+<section class="glass section">
+  <h2 class="purple-glow">gejms</h2>
+  <br>
+
+  <button class="jump-btn" onclick="go('/darts')">
+    <span>🎯 Enter /darts</span>
+    ➜
+  </button>
+  <br>
+  <button class="jump-btn" onclick="go('/minecraft')">
+    <span>📦 Enter /minecraft</span>
+    ➜
+  </button>
+</section>
+
+</main>
+
+<footer>
+  © <span id="year"></span> Marty • Marty
+</footer>
+
+</div>
+
+<script>
+/* ---------- REDIRECT ---------- */
+function go(path) {
+  window.location.href = path;
+}
+
+/* ---------- YEAR ---------- */
+document.getElementById("year").textContent = new Date().getFullYear();
+
+/* ---------- MOVING VOID ---------- */
+const canvas = document.getElementById("void");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+const particles = Array.from({ length: 100 }, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  size: Math.random() * 3 + 1,
+  speed: 0.1 + Math.random() * 0.4,
+  opacity: Math.random(),
+  fade: Math.random() * 0.01 + 0.005
+}));
+
+function draw() {
+  ctx.fillStyle = "#050208";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  for (const p of particles) {
+    p.opacity -= p.fade;
+    if (p.opacity <= 0 || p.opacity >= 1) p.fade *= -1;
+
+    ctx.fillStyle = `rgba(147,51,234,${p.opacity})`;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#9333ea";
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    p.y -= p.speed;
+
+    if (p.y < -20) {
+      p.y = canvas.height + 20;
+      p.x = Math.random() * canvas.width;
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
 </body>
 </html>
