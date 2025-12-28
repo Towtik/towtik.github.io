@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Darts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --board-wood: #1a0f0a;
+            --ring-red: #b91c1c;
+            --ring-green: #15803d;
+            --ring-black: #171717;
+            --ring-white: #f5f5f5;
+            --wire-silver: #a1a1aa;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09;
+            color: white;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .title-font { font-family: 'Bungee', cursive; }
+
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeOut 0.8s ease-in forwards 2.5s;
+        }
+
+        .splash-title {
+            font-size: 4rem;
+            color: #ef4444;
+            animation: zoomIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes zoomIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Realistic Board Texture */
+        .board-realistic {
+            background: radial-gradient(circle, #222 0%, #111 70%, #000 100%);
+            border: 15px solid var(--board-wood);
+            box-shadow: 
+                inset 0 0 40px rgba(0,0,0,0.8),
+                0 20px 50px rgba(0,0,0,0.9);
+        }
+
+        .dartboard-container {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            margin: 0 auto;
+            border-radius: 50%;
+            cursor: crosshair;
+            touch-action: none;
+            perspective: 1200px;
+        }
+
+        /* Trajectory */
+        #aim-path {
+            fill: none;
+            stroke-dasharray: 6;
+            animation: flow 0.5s linear infinite;
+        }
+
+        @keyframes flow {
+            from { stroke-dashoffset: 12; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Power Meter */
+        .power-meter-container {
+            position: absolute;
+            left: -60px;
+            bottom: 20px;
+            width: 20px;
+            height: 200px;
+            background: #1c1917;
+            border-radius: 10px;
+            border: 2px solid #444;
+            overflow: hidden;
+            display: none;
+        }
+
+        .power-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #22c55e, #eab308, #ef4444);
+            transition: height 0.05s linear;
+        }
+
+        /* Dart Flight Animation */
+        .flying-dart {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            z-index: 100;
+            pointer-events: none;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+
+        .stuck-dart {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 50;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.7));
+        }
+
+        .wind-arrow {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-action {
+            background: #1c1917;
+            border: 1px solid #444;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #292524;
+            border-color: #666;
+        }
+
+        .board-number {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            fill: #e2e8f0;
+            font-size: 5px;
+            text-shadow: 1px 1px 1px black;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col">
+
+    <div id="splash-screen">
+        <h1 class="splash-title title-font">ULTIMATE DARTS</h1>
+        <p class="text-zinc-500 tracking-[0.5em] uppercase mt-4">By Marty</p>
+    </div>
+
+    <header class="bg-zinc-900/80 backdrop-blur-md p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="bg-red-600 p-2 rounded-lg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 14 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div>
+                <h1 class="title-font text-xl tracking-wider text-red-500 uppercase">Ultimate Darts</h1>
+                <p class="text-[10px] text-zinc-500" id="player-tag">LEVEL 1 ROOKIE</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <p class="text-[10px] uppercase text-zinc-500">Credits</p>
+                <p class="font-bold text-yellow-500" id="wallet-balance">0</p>
+            </div>
+            <button onclick="toggleShop()" class="bg-zinc-800 p-2 rounded-full hover:bg-zinc-700 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center p-8 max-w-6xl mx-auto w-full">
+        
+        <!-- UI Indicators -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
+            <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-center">
+                <p class="text-zinc-500 text-[10px] uppercase">Score</p>
+                <p class="text-2xl font-bold" id="stat-score">0</p>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-center">
+                <p class="text-zinc-500 text-[10px] uppercase">Darts Left</p>
+                <p class="text-2xl font-bold text-red-500" id="stat-darts">10</p>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-center flex flex-col items-center justify-center">
+                <p class="text-zinc-500 text-[10px] uppercase">Wind</p>
+                <div class="flex items-center gap-2">
+                    <svg id="wind-arrow" class="wind-arrow text-blue-400" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                    <p class="text-xl font-bold text-blue-400" id="stat-wind">0</p>
+                </div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-center">
+                <p class="text-zinc-500 text-[10px] uppercase">Best Hit</p>
+                <p class="text-2xl font-bold text-orange-500" id="stat-best">0</p>
+            </div>
+        </div>
+
+        <!-- Play Area -->
+        <div class="relative">
+            <!-- Power Meter UI -->
+            <div id="power-meter-ui" class="power-meter-container">
+                <div id="power-bar" class="power-bar"></div>
+            </div>
+
+            <div id="dartboard" class="dartboard-container board-realistic" 
+                 onmousemove="handleMouseMove(event)" 
+                 onmousedown="startPowerCharge(event)" 
+                 onmouseup="releaseDart(event)"
+                 onmouseleave="hideAim()">
+                
+                <!-- Aiming Line -->
+                <svg id="aim-svg" class="absolute inset-0 w-full h-full pointer-events-none z-40 opacity-0 overflow-visible">
+                    <path id="aim-path" d="" stroke="rgba(255,255,255,0.4)" stroke-width="2" />
+                    <circle id="aim-target" cx="0" cy="0" r="8" fill="none" stroke="white" stroke-dasharray="4" />
+                </svg>
+
+                <!-- Realistic Dartboard SVG with Numbers -->
+                <svg viewBox="0 0 100 100" class="w-full h-full p-4 overflow-visible">
+                    <defs>
+                        <radialGradient id="boardGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#2a2a2a" />
+                            <stop offset="100%" style="stop-color:#111" />
+                        </radialGradient>
+                    </defs>
+                    
+                    <!-- Background Circle -->
+                    <circle cx="50" cy="50" r="48" fill="url(#boardGrad)" stroke="#333" stroke-width="0.5"/>
+                    
+                    <!-- Segments and Numbers Group -->
+                    <g id="board-segments"></g>
+                    
+                    <!-- Scoring Rings (Wires) -->
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--wire-silver)" stroke-width="0.3" opacity="0.6"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--wire-silver)" stroke-width="0.3" opacity="0.6"/>
+                    <circle cx="50" cy="50" r="25" fill="none" stroke="var(--wire-silver)" stroke-width="0.3" opacity="0.6"/>
+                    <circle cx="50" cy="50" r="23" fill="none" stroke="var(--wire-silver)" stroke-width="0.3" opacity="0.6"/>
+                    
+                    <!-- Bullseye Rings -->
+                    <circle cx="50" cy="50" r="6" fill="#15803d" stroke="var(--wire-silver)" stroke-width="0.3"/>
+                    <circle cx="50" cy="50" r="2.5" fill="#b91c1c" stroke="var(--wire-silver)" stroke-width="0.3"/>
+                    
+                    <!-- Number Ring Labels -->
+                    <g id="board-numbers-group"></g>
+                </svg>
+
+                <div id="hits-container" class="absolute inset-0 pointer-events-none"></div>
+                <div id="flight-layer" class="absolute inset-0 pointer-events-none overflow-visible"></div>
+            </div>
+
+            <div class="mt-8 text-center flex flex-col items-center gap-4">
+                <p id="instruction-text" class="text-zinc-500 font-medium text-lg">Click and HOLD to set Power, Release to Shoot!</p>
+                <button onclick="restartGame()" class="btn-action text-sm">Restart Session</button>
+            </div>
+        </div>
+
+        <!-- Quiver -->
+        <div class="mt-12 w-full max-w-md">
+            <h3 class="title-font text-sm mb-4 text-zinc-400">SELECT DART</h3>
+            <div class="flex gap-4" id="quiver">
+                <button id="btn-basic" onclick="selectDart('basic')" class="flex-1 p-4 bg-zinc-900 border-2 border-red-500 rounded-xl font-bold">BASIC</button>
+                <button id="btn-sharp" onclick="selectDart('sharp')" class="flex-1 p-4 bg-zinc-900/50 border-2 border-transparent opacity-50 rounded-xl font-bold cursor-not-allowed">SHARP 🔒</button>
+                <button id="btn-pro" onclick="selectDart('pro')" class="flex-1 p-4 bg-zinc-900/50 border-2 border-transparent opacity-50 rounded-xl font-bold cursor-not-allowed">PRO 🔒</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Shop -->
+    <div id="shop-modal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[200] hidden items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-3xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="title-font text-2xl text-yellow-500">Upgrade Shop</h2>
+                <button onclick="toggleShop()" class="text-2xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-zinc-800/50 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">Sharp Dart</p>
+                        <p class="text-xs text-zinc-500">-50% Wind Effect</p>
+                    </div>
+                    <button onclick="buyItem('sharp', 200)" class="bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold">200 pts</button>
+                </div>
+                <div class="bg-zinc-800/50 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">Pro Dart</p>
+                        <p class="text-xs text-zinc-500">+30 Score Bonus</p>
+                    </div>
+                    <button onclick="buyItem('pro', 500)" class="bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold">500 pts</button>
+                </div>
+            </div>
+            <p class="mt-6 text-center text-zinc-500">Balance: <span id="shop-wallet" class="text-yellow-500 font-bold">0</span></p>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-2 rounded-full font-bold shadow-xl opacity-0 transition-all z-[300]"></div>
+
+    <script>
+        const state = {
+            score: 0,
+            wallet: 0,
+            darts: 10,
+            best: 0,
+            inventory: ['basic'],
+            activeDart: 'basic',
+            windX: 0,
+            windY: 0,
+            isCharging: false,
+            chargePower: 0,
+            chargeDir: 1,
+            chargeTimer: null,
+            isFlying: false,
+            mouseX: 210,
+            mouseY: 210
+        };
+
+        // Professional Dartboard Numbering
+        const dartNumbers = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
+        const segments = document.getElementById('board-segments');
+        const numGroup = document.getElementById('board-numbers-group');
+
+        dartNumbers.forEach((num, i) => {
+            const startAngle = (i * 18) - 99; // Offset to start 20 at top
+            const endAngle = startAngle + 18;
+            
+            const color = i % 2 === 0 ? '#111' : '#f5f5f5';
+            
+            // Draw segment
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const x1 = 50 + 40 * Math.cos(Math.PI * startAngle / 180);
+            const y1 = 50 + 40 * Math.sin(Math.PI * startAngle / 180);
+            const x2 = 50 + 40 * Math.cos(Math.PI * endAngle / 180);
+            const y2 = 50 + 40 * Math.sin(Math.PI * endAngle / 180);
+            
+            path.setAttribute("d", `M 50 50 L ${x1} ${y1} A 40 40 0 0 1 ${x2} ${y2} Z`);
+            path.setAttribute("fill", color);
+            path.setAttribute("stroke", "#444");
+            path.setAttribute("stroke-width", "0.2");
+            segments.appendChild(path);
+
+            // Add Number
+            const midAngle = startAngle + 9;
+            const tx = 50 + 45 * Math.cos(Math.PI * midAngle / 180);
+            const ty = 50 + 45 * Math.sin(Math.PI * midAngle / 180) + 1.5; // Offset for vertical alignment
+            
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", tx);
+            text.setAttribute("y", ty);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("class", "board-number");
+            text.textContent = num;
+            numGroup.appendChild(text);
+        });
+
+        function generateWind() {
+            state.windX = (Math.random() - 0.5) * 450;
+            state.windY = (Math.random() - 0.5) * 450;
+            const power = Math.round(Math.sqrt(state.windX**2 + state.windY**2));
+            const angle = Math.atan2(state.windY, state.windX) * (180/Math.PI) + 90;
+            document.getElementById('stat-wind').innerText = power + " km/h";
+            document.getElementById('wind-arrow').style.transform = `rotate(${angle}deg)`;
+        }
+
+        function handleMouseMove(e) {
+            if (state.isFlying || state.darts <= 0) return;
+            const rect = document.getElementById('dartboard').getBoundingClientRect();
+            state.mouseX = e.clientX - rect.left;
+            state.mouseY = e.clientY - rect.top;
+            updateAimVisuals();
+        }
+
+        function updateAimVisuals() {
+            const svg = document.getElementById('aim-svg');
+            const path = document.getElementById('aim-path');
+            const target = document.getElementById('aim-target');
+            svg.style.opacity = '1';
+            path.setAttribute('d', `M 210 480 Q 210 ${state.mouseY - 50} ${state.mouseX} ${state.mouseY}`);
+            target.setAttribute('cx', state.mouseX);
+            target.setAttribute('cy', state.mouseY);
+        }
+
+        function hideAim() {
+            if (!state.isCharging) document.getElementById('aim-svg').style.opacity = '0';
+        }
+
+        function startPowerCharge(e) {
+            if (state.isFlying || state.darts <= 0) return;
+            state.isCharging = true;
+            state.chargePower = 0;
+            state.chargeDir = 1;
+            document.getElementById('power-meter-ui').style.display = 'block';
+            document.getElementById('instruction-text').innerText = "POWERING UP...";
+            
+            state.chargeTimer = setInterval(() => {
+                state.chargePower += 3 * state.chargeDir;
+                if (state.chargePower >= 100 || state.chargePower <= 0) state.chargeDir *= -1;
+                document.getElementById('power-bar').style.height = state.chargePower + '%';
+            }, 16);
+        }
+
+        function releaseDart() {
+            if (!state.isCharging) return;
+            clearInterval(state.chargeTimer);
+            state.isCharging = false;
+            state.isFlying = true;
+            document.getElementById('power-meter-ui').style.display = 'none';
+            document.getElementById('aim-svg').style.opacity = '0';
+
+            const powerFactor = state.chargePower / 100;
+            const windMod = state.activeDart === 'sharp' ? 0.4 : 1.0;
+            const drop = (1 - powerFactor) * 120; 
+            const finalX = state.mouseX + (state.windX * windMod * (1.2 - powerFactor));
+            const finalY = state.mouseY + (state.windY * windMod * (1.2 - powerFactor)) + drop;
+
+            animateFlight(finalX, finalY);
+        }
+
+        function animateFlight(tx, ty) {
+            const layer = document.getElementById('flight-layer');
+            const dart = document.createElement('div');
+            dart.className = 'flying-dart';
+            layer.appendChild(dart);
+
+            const dartColor = state.activeDart === 'pro' ? '#ef4444' : (state.activeDart === 'sharp' ? '#3b82f6' : '#22c55e');
+            dart.innerHTML = `
+                <svg viewBox="0 0 100 100">
+                    <path d="M50 10 L40 90 L60 90 Z" fill="${dartColor}" />
+                    <rect x="48" y="0" width="4" height="60" fill="#ddd" />
+                </svg>`;
+
+            const startTime = performance.now();
+            const duration = 500;
+
+            function frame(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currX = 210 + (tx - 210) * progress;
+                const currY = 480 + (ty - 480) * progress - (Math.sin(progress * Math.PI) * 120);
+                const scale = 3 - (progress * 2.3);
+                
+                dart.style.left = currX + 'px';
+                dart.style.top = currY + 'px';
+                dart.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+                if (progress < 1) requestAnimationFrame(frame);
+                else {
+                    dart.remove();
+                    finalizeHit(tx, ty);
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function finalizeHit(x, y) {
+            state.isFlying = false;
+            state.darts--;
+            
+            const boardCenterX = 210;
+            const boardCenterY = 210;
+            const dist = Math.sqrt((x - boardCenterX)**2 + (y - boardCenterY)**2);
+
+            if (x < -100 || x > 520 || y < -100 || y > 520) {
+                showToast("DART FLEW OFF SCREEN! 💨");
+            } else {
+                let pts = 0;
+                
+                // Scoring logic based on distance (radius is 420px container / 2 = 210, svg is 100 units)
+                // Converting dist to board units (0-50)
+                const boardDist = (dist / 210) * 50;
+
+                if (boardDist < 2.5) pts = 50; // Double Bull
+                else if (boardDist < 6) pts = 25; // Outer Bull
+                else if (boardDist < 40) {
+                    // Calculate angle for segment-based score
+                    let angle = Math.atan2(y - boardCenterY, x - boardCenterX) * (180 / Math.PI);
+                    angle = (angle + 99 + 360) % 360; // Align with dartNumbers array
+                    const segmentIdx = Math.floor(angle / 18);
+                    pts = dartNumbers[segmentIdx];
+
+                    // Multipliers
+                    if (boardDist > 23 && boardDist < 25) pts *= 3; // Triple
+                    if (boardDist > 38 && boardDist < 40) pts *= 2; // Double
+                }
+
+                if (pts > 0 && state.activeDart === 'pro') pts += 30;
+
+                state.score += pts;
+                state.wallet += pts;
+                if (pts > state.best) state.best = pts;
+                showToast(pts > 0 ? `HIT! +${pts}` : "STUCK IN THE WALL!");
+                spawnStuckDart(x, y);
+            }
+
+            generateWind();
+            updateUI();
+            
+            if (state.darts <= 0) {
+                document.getElementById('instruction-text').innerText = "GAME OVER! Click Restart to play again.";
+            } else {
+                document.getElementById('instruction-text').innerText = "Click and HOLD for Power...";
+            }
+        }
+
+        function spawnStuckDart(x, y) {
+            const dart = document.createElement('div');
+            dart.className = 'stuck-dart';
+            dart.style.left = x + 'px';
+            dart.style.top = y + 'px';
+            const dartColor = state.activeDart === 'pro' ? '#ef4444' : (state.activeDart === 'sharp' ? '#3b82f6' : '#22c55e');
+            
+            dart.innerHTML = `
+                <svg viewBox="0 0 100 100">
+                    <rect x="48" y="50" width="4" height="40" fill="#94a3b8" />
+                    <path d="M40 70 L50 40 L60 70 Z" fill="${dartColor}" />
+                    <circle cx="50" cy="50" r="6" fill="#1e293b" />
+                </svg>`;
+            document.getElementById('hits-container').appendChild(dart);
+        }
+
+        function updateUI() {
+            document.getElementById('stat-score').innerText = state.score;
+            document.getElementById('stat-darts').innerText = state.darts;
+            document.getElementById('stat-best').innerText = state.best;
+            document.getElementById('wallet-balance').innerText = state.wallet;
+            document.getElementById('shop-wallet').innerText = state.wallet;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = '1';
+            t.style.bottom = '40px';
+            setTimeout(() => { t.style.opacity = '0'; t.style.bottom = '10px'; }, 2000);
+        }
+
+        function restartGame() {
+            state.score = 0;
+            state.darts = 10;
+            state.isFlying = false;
+            document.getElementById('hits-container').innerHTML = '';
+            document.getElementById('instruction-text').innerText = "Click and HOLD for Power...";
+            generateWind();
+            updateUI();
+            showToast("SESSION RESTARTED");
+        }
+
+        function selectDart(id) {
+            if (!state.inventory.includes(id)) return;
+            state.activeDart = id;
+            ['basic', 'sharp', 'pro'].forEach(d => {
+                const btn = document.getElementById('btn-' + d);
+                if (btn) btn.style.borderColor = d === id ? '#ef4444' : 'transparent';
+            });
+        }
+
+        function buyItem(id, cost) {
+            if (state.wallet >= cost && !state.inventory.includes(id)) {
+                state.wallet -= cost;
+                state.inventory.push(id);
+                const btn = document.getElementById('btn-' + id);
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.innerText = id.toUpperCase();
+                updateUI();
+                showToast("UPGRADE UNLOCKED!");
+            } else if (state.inventory.includes(id)) {
+                showToast("ALREADY OWNED");
+            } else {
+                showToast("NOT ENOUGH CREDITS");
+            }
+        }
+
+        function toggleShop() {
+            const m = document.getElementById('shop-modal');
+            m.classList.toggle('hidden');
+            m.classList.toggle('flex');
+        }
+
+        window.onload = () => {
+            generateWind();
+            updateUI();
+        }
+    </script>
+</body>
+</html>

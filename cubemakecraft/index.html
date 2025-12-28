@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cubemakecraft – Dynamic World with Caves, Fog & Optimizations</title>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Pointer Lock Controls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/PointerLockControls.js"></script>
+  <!-- NoiseJS for terrain generation (supports simplex3) -->
+  <script src="https://cdn.jsdelivr.net/gh/josephg/noisejs/perlin.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    html, body { background: #87CEEB; }
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    /* Hotbar styling */
+    #hotbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .hotbar-slot {
+      width: 50px;
+      height: 50px;
+      margin: 0 4px;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.1);
+    }
+    .hotbar-slot.selected { border-color: yellow; }
+    .hotbar-slot img {
+      max-width: 100%;
+      max-height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="crosshair"></div>
+  <!-- Hotbar with 10 slots -->
+  <div id="hotbar">
+    <div class="hotbar-slot" data-index="0">
+      <img src="https://towtik.github.io/New%20Project%20(69).png" alt="Stone">
+    </div>
+    <div class="hotbar-slot" data-index="1">
+      <img src="https://towtik.github.io/11635-v7.jpg" alt="Grass">
+    </div>
+    <div class="hotbar-slot" data-index="2">
+      <img src="https://towtik.github.io/New%20Project%20(70).png" alt="Dirt">
+    </div>
+    <div class="hotbar-slot" data-index="3"></div>
+    <div class="hotbar-slot" data-index="4"></div>
+    <div class="hotbar-slot" data-index="5"></div>
+    <div class="hotbar-slot" data-index="6"></div>
+    <div class="hotbar-slot" data-index="7"></div>
+    <div class="hotbar-slot" data-index="8"></div>
+    <div class="hotbar-slot" data-index="9"></div>
+  </div>
+
+  <script>
+    // Enable caching of assets so textures load only once.
+    THREE.Cache.enabled = true;
+
+    // --- Scene Setup ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    
+    // Create the renderer.
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x87CEEB);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 80);
+    
+    // --- Fog Setup ---
+    let viewDistance = 25; // in blocks
+    camera.far = viewDistance;
+    camera.updateProjectionMatrix();
+    scene.fog = new THREE.Fog(0x87CEEB, viewDistance * 0.8, viewDistance);
+
+    // --- Lighting ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7.5);
+    scene.add(directionalLight);
+
+    // --- Pointer Lock Controls ---
+    const controls = new THREE.PointerLockControls(camera, document.body);
+    scene.add(controls.getObject());
+    document.body.addEventListener('click', () => controls.lock());
+
+    // --- Global Settings ---
+    const TERRAIN_SIZE = 80;
+    const HALF_TERRAIN = TERRAIN_SIZE / 2;
+    const FIXED_BEDROCK_Y = -12;
+    const RESPAWN_THRESHOLD = -20;
+    const COLLISION_CHECK_DISTANCE = 5;
+
+    // --- Cave Settings & Noise Setup ---
+    // Lowering the threshold makes caves less common.
+    const CAVE_SCALE = 10;
+    const CAVE_THRESHOLD = 0.3; // Lowered from 0.5 to 0.3
+    noise.seed(Math.random());
+    function getTerrainHeight(x, z) {
+      const noiseScale = 10, amplitude = 3, baseHeight = 2;
+      return Math.floor(noise.simplex2(x / noiseScale, z / noiseScale) * amplitude) + baseHeight;
+    }
+
+    // --- Texture Loading ---
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+
+    const stoneTexture = loader.load("https://towtik.github.io/New%20Project%20(69).png", (tex) => {
+      tex.flipY = false;
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 1);
+    });
+    const grassTexture = loader.load("https://towtik.github.io/11635-v7.jpg", (tex) => {
+      tex.flipY = false;
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 1);
+    });
+    const dirtTexture = loader.load("https://towtik.github.io/New%20Project%20(70).png", (tex) => {
+      tex.flipY = false;
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 1);
+    });
+    const bedrockTexture = loader.load("https://towtik.github.io/New%20Project%20(71).png", (tex) => {
+      tex.flipY = false;
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 1);
+    });
+
+    // --- Function to Create a Terrain Block (Individual Mesh) ---
+    const terrainBlocks = [];
+    function createTerrainBlock(x, y, z, type) {
+      let material;
+      if (type === "grass") {
+        material = grassTexture ? new THREE.MeshStandardMaterial({ map: grassTexture }) : new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      } else if (type === "dirt") {
+        material = dirtTexture ? new THREE.MeshStandardMaterial({ map: dirtTexture }) : new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      } else if (type === "stone") {
+        material = stoneTexture ? new THREE.MeshStandardMaterial({ map: stoneTexture }) : new THREE.MeshStandardMaterial({ color: 0x808080 });
+      } else if (type === "bedrock") {
+        material = bedrockTexture ? new THREE.MeshStandardMaterial({ map: bedrockTexture }) : new THREE.MeshStandardMaterial({ color: 0x333333 });
+      } else {
+        material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+      }
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const block = new THREE.Mesh(geometry, material);
+      block.position.set(x, y, z);
+      block.userData = { type: type };
+      scene.add(block);
+      terrainBlocks.push(block);
+      return block;
+    }
+
+    // --- Terrain Generation ---
+    for (let x = -HALF_TERRAIN; x <= HALF_TERRAIN; x++) {
+      for (let z = -HALF_TERRAIN; z <= HALF_TERRAIN; z++) {
+        const h = getTerrainHeight(x, z);
+        // Use a slightly lower threshold for surface blocks.
+        const surfaceCaveThreshold = CAVE_THRESHOLD - 0.1;
+        if (noise.simplex3(x / CAVE_SCALE, h / CAVE_SCALE, z / CAVE_SCALE) <= surfaceCaveThreshold) {
+          createTerrainBlock(x, h, z, "grass");
+          for (let y = h - 1; y >= h - 4; y--) {
+            if (noise.simplex3(x / CAVE_SCALE, y / CAVE_SCALE, z / CAVE_SCALE) <= surfaceCaveThreshold) {
+              createTerrainBlock(x, y, z, "dirt");
+            }
+          }
+        }
+        for (let y = h - 5; y > FIXED_BEDROCK_Y; y--) {
+          const caveValue = noise.simplex3(x / CAVE_SCALE, y / CAVE_SCALE, z / CAVE_SCALE);
+          if (caveValue > CAVE_THRESHOLD) continue;
+          createTerrainBlock(x, y, z, "stone");
+        }
+      }
+    }
+    console.log("Terrain generated with", terrainBlocks.length, "blocks");
+
+    // --- Bedrock Layer ---
+    for (let x = -HALF_TERRAIN; x <= HALF_TERRAIN; x++) {
+      for (let z = -HALF_TERRAIN; z <= HALF_TERRAIN; z++) {
+        createTerrainBlock(x, FIXED_BEDROCK_Y, z, "bedrock");
+      }
+    }
+
+    // --- Walls (Invisible Barrier) Using InstancedMesh ---
+    const wallCollisionBoxes = [];
+    const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const wallMaterial = new THREE.MeshStandardMaterial({ visible: false });
+    const wallHeight = 257;
+    let wallCount = 0;
+    for (let x = -HALF_TERRAIN - 1; x <= HALF_TERRAIN + 1; x++) {
+      wallCount += 2 * wallHeight;
+    }
+    for (let z = -HALF_TERRAIN; z <= HALF_TERRAIN; z++) {
+      wallCount += 2 * wallHeight;
+    }
+    const wallMesh = new THREE.InstancedMesh(wallGeometry, wallMaterial, wallCount);
+    let index = 0;
+    const dummy = new THREE.Object3D();
+    function addWallInstance(x, y, z) {
+      dummy.position.set(x, y, z);
+      dummy.updateMatrix();
+      wallMesh.setMatrixAt(index, dummy.matrix);
+      wallCollisionBoxes.push({
+        min: new THREE.Vector3(x - 0.5, y - 0.5, z - 0.5),
+        max: new THREE.Vector3(x + 0.5, y + 0.5, z + 0.5)
+      });
+      index++;
+    }
+    for (let x = -HALF_TERRAIN - 1; x <= HALF_TERRAIN + 1; x++) {
+      for (let y = 0; y < wallHeight; y++) {
+        addWallInstance(x, y, -HALF_TERRAIN - 1);
+        addWallInstance(x, y, HALF_TERRAIN + 1);
+      }
+    }
+    for (let z = -HALF_TERRAIN; z <= HALF_TERRAIN; z++) {
+      for (let y = 0; y < wallHeight; y++) {
+        addWallInstance(-HALF_TERRAIN - 1, y, z);
+        addWallInstance(HALF_TERRAIN + 1, y, z);
+      }
+    }
+    wallMesh.instanceMatrix.needsUpdate = true;
+    scene.add(wallMesh);
+
+    // --- Collision Detection for the Player ---
+    function getPlayerBox(pos) {
+      return new THREE.Box3(
+        new THREE.Vector3(pos.x - 0.3, pos.y, pos.z - 0.3),
+        new THREE.Vector3(pos.x + 0.3, pos.y + 1.99, pos.z + 0.3)
+      );
+    }
+    const EPSILON = 0.001;
+    function collides(pos) {
+      const playerBox = getPlayerBox(pos);
+      if (
+        playerBox.min.x < -HALF_TERRAIN - 1 || playerBox.max.x > HALF_TERRAIN + 1 ||
+        playerBox.min.z < -HALF_TERRAIN - 1 || playerBox.max.z > HALF_TERRAIN + 1
+      ) {
+        return true;
+      }
+      for (const block of terrainBlocks) {
+        if (Math.abs(block.position.x - pos.x) > COLLISION_CHECK_DISTANCE ||
+            Math.abs(block.position.z - pos.z) > COLLISION_CHECK_DISTANCE)
+          continue;
+        const blockBox = new THREE.Box3(
+          new THREE.Vector3(block.position.x - 0.5, block.position.y - 0.5, block.position.z - 0.5),
+          new THREE.Vector3(block.position.x + 0.5, block.position.y + 0.5, block.position.z + 0.5)
+        );
+        if (playerBox.intersectsBox(blockBox)) {
+          const overlapY = Math.min(playerBox.max.y, blockBox.max.y) - Math.max(playerBox.min.y, blockBox.min.y);
+          if (overlapY > EPSILON) return true;
+        }
+      }
+      for (const wall of wallCollisionBoxes) {
+        if (Math.abs(wall.min.x - pos.x) > COLLISION_CHECK_DISTANCE ||
+            Math.abs(wall.min.z - pos.z) > COLLISION_CHECK_DISTANCE)
+          continue;
+        const wallBox = new THREE.Box3(wall.min, wall.max);
+        if (playerBox.intersectsBox(wallBox)) {
+          const overlapY = Math.min(playerBox.max.y, wallBox.max.y) - Math.max(playerBox.min.y, wallBox.min.y);
+          if (overlapY > EPSILON) return true;
+        }
+      }
+      return false;
+    }
+
+    // --- Player Settings, Movement & Bobbing ---
+    const spawnX = 0, spawnZ = 5;
+    const spawnY = getTerrainHeight(spawnX, spawnZ) + 1;
+    const spawnPosition = new THREE.Vector3(spawnX, spawnY, spawnZ);
+    const playerPosition = spawnPosition.clone();
+    const EYE_OFFSET = 1.7;
+    let bobbingTime = 0;
+    const bobbingSpeed = 10;
+    const bobbingAmplitude = 0.1;
+    function updateCamera() {
+      const basePos = new THREE.Vector3(
+        playerPosition.x,
+        playerPosition.y + EYE_OFFSET,
+        playerPosition.z
+      );
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
+      const right = new THREE.Vector3();
+      right.crossVectors(forward, new THREE.Vector3(0,1,0)).normalize();
+      const horizontalOffset = bobbingAmplitude * Math.sin(bobbingTime * bobbingSpeed);
+      const verticalOffset = 0.05 * Math.abs(Math.cos(bobbingTime * bobbingSpeed));
+      const offset = right.multiplyScalar(horizontalOffset);
+      camera.position.copy(basePos.add(offset));
+      camera.position.y += verticalOffset;
+    }
+    updateCamera();
+
+    // --- Arm Action Animation Setup ---
+    let armActionTime = 0;
+    const armActionDuration = 0.3;
+    function animateArmAction() {
+      armActionTime = armActionDuration;
+    }
+
+    // --- Create a Hand Group with Arm and Held Item ---
+    const handGroup = new THREE.Group();
+    const baseHandPosition = new THREE.Vector3(0.7, -0.6, -1);
+    handGroup.position.copy(baseHandPosition);
+    handGroup.rotation.set(-0.4, Math.PI, 0);
+    camera.add(handGroup);
+    const armGeometry = new THREE.BoxGeometry(0.2, 0.5, 0.25);
+    const armMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+    const arm = new THREE.Mesh(armGeometry, armMaterial);
+    arm.position.set(-0.05, 0, 0);
+    handGroup.add(arm);
+    const heldItemGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+    const heldItemMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const heldItem = new THREE.Mesh(heldItemGeometry, heldItemMaterial);
+    heldItem.position.set(0.05, 0.01, 0.3);
+    handGroup.add(heldItem);
+    let lastCameraRotation = new THREE.Euler().copy(camera.rotation);
+    function updateHand(delta) {
+      const bobX = 0.02 * Math.sin(bobbingTime * 4);
+      const bobY = 0.1 * Math.cos(bobbingTime * 4);
+      let rotationDelta = camera.rotation.y - lastCameraRotation.y;
+      const handSwayOffset = 0.5 * rotationDelta;
+      handGroup.position.set(
+        baseHandPosition.x + bobX + handSwayOffset,
+        baseHandPosition.y + bobY,
+        baseHandPosition.z
+      );
+      if (armActionTime > 0) {
+        handGroup.rotation.x = -0.4 + (-0.2 * Math.sin(((armActionDuration - armActionTime) / armActionDuration) * Math.PI));
+        armActionTime -= delta;
+      } else {
+        handGroup.rotation.x = -0.4;
+      }
+      lastCameraRotation.copy(camera.rotation);
+    }
+
+    // --- Movement & Physics ---
+    const keys = {};
+    document.addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; });
+    document.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
+    const gravity = 30;
+    const desiredJumpHeight = 1.5;
+    const jumpSpeed = Math.sqrt(2 * gravity * desiredJumpHeight);
+    let velocityY = 0, canJump = false;
+    function movePlayer(delta) {
+      const speed = 4.317;
+      const move = new THREE.Vector3();
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
+      const right = new THREE.Vector3();
+      right.crossVectors(forward, new THREE.Vector3(0,1,0)).normalize();
+      if (keys["w"]) move.addScaledVector(forward, speed * delta);
+      if (keys["s"]) move.addScaledVector(forward, -speed * delta);
+      if (keys["a"]) move.addScaledVector(right, -speed * delta);
+      if (keys["d"]) move.addScaledVector(right, speed * delta);
+      
+      const newPosHorizontal = playerPosition.clone().add(new THREE.Vector3(move.x, 0, move.z));
+      if (!collides(newPosHorizontal)) {
+        playerPosition.x = newPosHorizontal.x;
+        playerPosition.z = newPosHorizontal.z;
+        if (move.length() > 0.001) {
+          bobbingTime += delta;
+        } else {
+          bobbingTime = 0;
+        }
+      } else {
+        bobbingTime += move.length() > 0.001 ? delta * 0.5 : 0;
+      }
+      
+      // --- Vertical Movement ---
+      if (canJump && keys[" "]) {
+        velocityY = jumpSpeed;
+        canJump = false;
+      }
+      velocityY -= gravity * delta;
+      const newPosVertical = playerPosition.clone();
+      newPosVertical.y += velocityY * delta;
+      
+      if (!collides(newPosVertical)) {
+        playerPosition.y = newPosVertical.y;
+      } else {
+        if (velocityY > 0) {
+          velocityY = 0;
+        } else {
+          let maxBlockTop = -Infinity;
+          const testBox = getPlayerBox(newPosVertical);
+          for (const block of terrainBlocks) {
+            if (Math.abs(block.position.x - playerPosition.x) > COLLISION_CHECK_DISTANCE ||
+                Math.abs(block.position.z - playerPosition.z) > COLLISION_CHECK_DISTANCE)
+              continue;
+            const blockBox = new THREE.Box3(
+              new THREE.Vector3(block.position.x - 0.5, block.position.y - 0.5, block.position.z - 0.5),
+              new THREE.Vector3(block.position.x + 0.5, block.position.y + 0.5, block.position.z + 0.5)
+            );
+            if (testBox.intersectsBox(blockBox)) {
+              maxBlockTop = Math.max(maxBlockTop, blockBox.max.y);
+            }
+          }
+          for (const wall of wallCollisionBoxes) {
+            const wallBox = new THREE.Box3(wall.min, wall.max);
+            if (testBox.intersectsBox(wallBox)) {
+              maxBlockTop = Math.max(maxBlockTop, wallBox.max.y);
+            }
+          }
+          playerPosition.y = maxBlockTop;
+          velocityY = 0;
+          canJump = true;
+        }
+      }
+      updateCamera();
+    }
+
+    // --- Hotbar Logic and Held Item Update ---
+    const hotbarSlots = document.querySelectorAll(".hotbar-slot");
+    let activeSlot = 0;
+    function updateHotbarUI() {
+      hotbarSlots.forEach((slot, index) => { 
+        slot.classList.toggle("selected", index === activeSlot); 
+      });
+      const activeSlotElem = hotbarSlots[activeSlot];
+      const img = activeSlotElem.querySelector("img");
+      if (img) {
+        heldItem.visible = true;
+        arm.visible = false;
+        if (activeSlot === 0 && stoneTexture) {
+          heldItem.material.map = stoneTexture;
+        } else if (activeSlot === 1 && grassTexture) {
+          heldItem.material.map = grassTexture;
+        } else if (activeSlot === 2 && dirtTexture) {
+          heldItem.material.map = dirtTexture;
+        } else {
+          heldItem.material.map = null;
+        }
+        heldItem.material.needsUpdate = true;
+        heldItem.position.set(0.05, 0.01, -0.3);
+      } else {
+        heldItem.visible = false;
+        arm.visible = true;
+        heldItem.position.set(0.05, 0.01, 0.12);
+      }
+    }
+    updateHotbarUI();
+    window.addEventListener("wheel", (e) => {
+      activeSlot = e.deltaY > 0 ? (activeSlot + 1) % hotbarSlots.length :
+                                  (activeSlot - 1 + hotbarSlots.length) % hotbarSlots.length;
+      updateHotbarUI();
+    });
+    const slotKeyMapping = {
+      "1": 0, "+": 0,
+      "2": 1, "ě": 1,
+      "3": 2, "š": 2,
+      "4": 3, "č": 3,
+      "5": 4, "ř": 4,
+      "6": 5, "ž": 5,
+      "7": 6, "ý": 6,
+      "8": 7, "á": 7,
+      "9": 8, "í": 8,
+      "0": 9, "é": 9
+    };
+    window.addEventListener("keydown", (e) => {
+      const key = e.key;
+      if (key === "Escape") {
+        let newDistance = prompt("Enter new view distance (in blocks):", viewDistance);
+        if(newDistance !== null && !isNaN(newDistance)) {
+          viewDistance = Number(newDistance);
+          camera.far = viewDistance;
+          camera.updateProjectionMatrix();
+          scene.fog.near = viewDistance * 0.8;
+          scene.fog.far = viewDistance;
+        }
+        return;
+      }
+      if (key in slotKeyMapping) { 
+        activeSlot = slotKeyMapping[key]; 
+        updateHotbarUI(); 
+      }
+    });
+
+    // --- Block Highlighting (Black Outline) ---
+    const outline = new THREE.BoxHelper();
+    outline.visible = false;
+    outline.material.color.set(0x000000);
+    scene.add(outline);
+    let highlightCooldown = 0;
+    function highlightBlock() {
+      if (highlightCooldown > 0) {
+        highlightCooldown--;
+        return;
+      }
+      highlightCooldown = 2;
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(), camera);
+      const intersects = raycaster.intersectObjects(terrainBlocks).filter(inter => {
+        return camera.position.distanceTo(inter.object.position) <= 5;
+      });
+      if (intersects.length > 0) {
+        outline.setFromObject(intersects[0].object);
+        outline.visible = true;
+      } else {
+        outline.visible = false;
+      }
+    }
+
+    // --- Shattering (Crumb) Effect Setup (Modified) ---
+    const crumbs = [];
+    function spawnCrumbs(brokenBlock) {
+      // Increase crumb count to 30.
+      const count = 30;
+      // Use a smaller geometry (0.02) but no strong downward bias.
+      const crumbGeometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
+      const crumbMaterial = brokenBlock.material.clone();
+      for (let i = 0; i < count; i++) {
+        const crumb = new THREE.Mesh(crumbGeometry, crumbMaterial);
+        // Use a moderate horizontal spread and a slight upward bias.
+        const offsetX = (Math.random() - 0.5) * 0.3;
+        const offsetY = (Math.random() - 0.5) * 0.15 + 0.05;  // average slight upward offset
+        const offsetZ = (Math.random() - 0.5) * 0.3;
+        crumb.position.set(
+          brokenBlock.position.x + offsetX,
+          brokenBlock.position.y + offsetY,
+          brokenBlock.position.z + offsetZ
+        );
+        scene.add(crumb);
+        const velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.05,
+          Math.random() * 0.05,
+          (Math.random() - 0.5) * 0.05
+        );
+        crumbs.push({
+          mesh: crumb,
+          velocity: velocity,
+          life: 0.8
+        });
+      }
+    }
+
+    // --- Block Breaking & Placing (Original Code with Minor Changes) ---
+    document.addEventListener("contextmenu", (event) => event.preventDefault());
+    document.addEventListener("mousedown", (e) => {
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(), camera);
+      const intersects = raycaster.intersectObjects(terrainBlocks).filter(inter => {
+        return camera.position.distanceTo(inter.object.position) <= 5;
+      });
+      if (intersects.length > 0) {
+        const targetBlock = intersects[0].object;
+        // Prevent breaking bedrock, but allow placing adjacent to it.
+        if (e.button === 0 && targetBlock.userData.type === "bedrock") return;
+        const normal = intersects[0].face.normal;
+        const position = targetBlock.position.clone().add(normal);
+        if (e.button === 0) {
+          spawnCrumbs(targetBlock);
+          scene.remove(targetBlock);
+          const index = terrainBlocks.indexOf(targetBlock);
+          if (index !== -1) terrainBlocks.splice(index, 1);
+          animateArmAction();
+        } else if (e.button === 2) {
+          if (position.y >= 256) return;
+          const selectedSlot = hotbarSlots[activeSlot];
+          if (!selectedSlot.querySelector("img")) return;
+          const blockBox = new THREE.Box3(
+            new THREE.Vector3(position.x - 0.5, position.y - 0.5, position.z - 0.5),
+            new THREE.Vector3(position.x + 0.5, position.y + 0.5, position.z + 0.5)
+          );
+          const playerBox = getPlayerBox(playerPosition);
+          if (blockBox.intersectsBox(playerBox)) return;
+          let blockType;
+          if (activeSlot === 1) {
+            blockType = "grass";
+          } else if (activeSlot === 2) {
+            blockType = "dirt";
+          } else {
+            blockType = "stone";
+          }
+          // Allow placement even if the target block is bedrock.
+          createTerrainBlock(position.x, position.y, position.z, blockType);
+          animateArmAction();
+        }
+      }
+    });
+
+    // --- Render Loop ---
+    const clock = new THREE.Clock();
+    function animate() {
+      const delta = clock.getDelta();
+      requestAnimationFrame(animate);
+      movePlayer(delta);
+      updateHand(delta);
+      // Culling: hide blocks outside the view distance.
+      terrainBlocks.forEach(block => {
+        const d = block.position.distanceTo(camera.position);
+        block.visible = d <= viewDistance;
+      });
+      // Animate crumb particles.
+      for (let i = crumbs.length - 1; i >= 0; i--) {
+        const crumb = crumbs[i];
+        crumb.velocity.y -= 0.1;
+        crumb.mesh.position.addScaledVector(crumb.velocity, delta);
+        const groundY = getTerrainHeight(crumb.mesh.position.x, crumb.mesh.position.z) - 0.5;
+        if (crumb.mesh.position.y < groundY) {
+          crumb.mesh.position.y = groundY;
+          crumb.velocity.y = 0;
+        }
+        crumb.life -= delta;
+        if (crumb.life <= 0) {
+          scene.remove(crumb.mesh);
+          crumbs.splice(i, 1);
+        }
+      }
+      // Respawn if the player falls too low.
+      if (playerPosition.y < RESPAWN_THRESHOLD) {
+        const newSpawnY = getTerrainHeight(spawnX, spawnZ) + 1;
+        spawnPosition.set(spawnX, newSpawnY, spawnZ);
+        playerPosition.copy(spawnPosition);
+        velocityY = 0;
+        controls.getObject().rotation.set(0, 0, 0);
+      }
+      highlightBlock();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // --- Resize Handling ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
