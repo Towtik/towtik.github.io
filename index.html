@@ -27,14 +27,12 @@
             align-items: center;
             min-height: 100vh;
             color: #1a1a1a;
-            overflow: hidden;
             padding: 20px;
         }
 
         .win-app {
-            width: 100%;
-            max-width: 950px; 
-            height: 80vh;      
+            width: 850px; 
+            height: 70vh;      
             background: var(--mica-bg);
             backdrop-filter: blur(40px) saturate(160%);
             border-radius: 12px;
@@ -132,7 +130,7 @@
 
         .taskbar {
             position: absolute;
-            bottom: 25px; /* raised slightly for mobile */
+            bottom: 50px; /* moved further up for visibility */
             left: 50%;
             transform: translateX(-50%);
             height: 52px;
@@ -176,9 +174,10 @@
         }
 
         @media (max-width: 640px) {
-            .win-app { height: 95vh; width: 100%; border-radius: 12px; }
-            .content { padding: 30px 15px 120px 15px; }
+            .win-app { height: 90vh; width: 95%; border-radius: 12px; }
+            .content { padding: 30px 15px 140px 15px; }
             .app-grid { grid-template-columns: 1fr; }
+            .taskbar { bottom: 60px; }
         }
 
         .fluent-darts { fill: url(#grad-darts); }
