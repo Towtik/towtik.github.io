@@ -132,7 +132,7 @@
 
         .taskbar {
             position: absolute;
-            bottom: 5px;
+            bottom: 25px; /* raised slightly for mobile */
             left: 50%;
             transform: translateX(-50%);
             height: 52px;
@@ -230,7 +230,7 @@
         <div class="max-w-3xl mx-auto">
             <h3 class="text-xs font-semibold mb-4 px-2 text-gray-400 uppercase tracking-widest">Projects^⁠_⁠^</h3>
             <div class="app-grid">
-                <div class="app-card" onclick="window.location.href='darts.html'">
+                <div class="app-card" onclick="window.location.href='/darts'">
                     <svg viewBox="0 0 48 48" width="54" height="54">
                         <circle cx="24" cy="24" r="22" class="fluent-darts" />
                         <circle cx="24" cy="24" r="6" fill="white" />
@@ -252,7 +252,7 @@
                     </div>
                 </div>
 
-                <div class="app-card" onclick="window.location.href='cubemakecraft.html'">
+                <div class="app-card" onclick="window.location.href='/cubemakecraft'">
                     <svg viewBox="0 0 48 48" width="54" height="54">
                         <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" class="fluent-cube" />
                         <path d="M24 4L6 13l18 9 18-9-18-9z" fill="white" fill-opacity="0.3" />
@@ -272,7 +272,7 @@
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
             </svg>
         </div>
-        <div class="task-item" title="Darts" onclick="window.location.href='darts.html'">
+        <div class="task-item" title="Darts" onclick="window.location.href='/darts'">
             <svg viewBox="0 0 48 48" width="24" height="24">
                 <circle cx="24" cy="24" r="22" class="fluent-darts" />
                 <circle cx="24" cy="24" r="6" fill="white" />
@@ -283,7 +283,7 @@
                 <rect x="4" y="8" width="40" height="32" rx="6" class="fluent-thumb" />
             </svg>
         </div>
-        <div class="task-item" title="CubeCraft" onclick="window.location.href='cubemakecraft.html'">
+        <div class="task-item" title="CubeCraft" onclick="window.location.href='/cubemakecraft'">
             <svg viewBox="0 0 48 48" width="24" height="24">
                 <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" class="fluent-cube" />
             </svg>
