@@ -1,295 +1,303 @@
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>MARTY</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tsmarty.xyz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @font-face {
+            font-family: 'Segoe UI Variable';
+            src: local('Segoe UI Variable Text'), local('Segoe UI Variable'), local('Segoe UI');
+        }
 
-<style>
-/* ---------- RESET ---------- */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: system-ui, Arial, sans-serif;
-  color: #e5e7eb;
-  background: #050208;
-  overflow-x: hidden;
-}
+        :root {
+            --win-accent: #0067c0;
+            --mica-bg: rgba(243, 243, 243, 0.85);
+            --taskbar-bg: rgba(255, 255, 255, 0.85);
+            --win-border: rgba(0, 0, 0, 0.15);
+        }
 
-/* ---------- BACKGROUND ---------- */
-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-}
+        body {
+            font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: url('https://images.unsplash.com/photo-1633412802994-5c058f151b66?q=80&w=2080&auto=format&fit=crop') center/cover no-repeat;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #1a1a1a;
+            overflow: hidden;
+            padding: 20px;
+        }
 
-/* ---------- COMMON STYLES ---------- */
-.glass {
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(168,85,247,0.3);
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(168,85,247,0.2);
-}
+        .win-app {
+            width: 100%;
+            max-width: 950px; 
+            height: 80vh;      
+            background: var(--mica-bg);
+            backdrop-filter: blur(40px) saturate(160%);
+            border-radius: 12px;
+            border: 1px solid var(--win-border);
+            box-shadow: 0 32px 64px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            animation: app-appear 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
 
-.purple-glow {
-  color: #c084fc;
-  text-shadow: 0 0 8px rgba(168,85,247,0.8);
-}
+        @keyframes app-appear {
+            from { opacity: 0; transform: scale(0.95) translateY(40px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 32px;
-}
+        .title-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 16px;
+            user-select: none;
+            flex-shrink: 0;
+        }
 
-/* ---------- HEADER ---------- */
-header {
-  text-align: center;
-  margin-bottom: 48px;
-}
+        .window-controls {
+            display: flex;
+            height: 100%;
+        }
 
-.logo {
-  width: 80px;
-  height: 80px;
-  background: #4c1d95;
-  border: 2px solid #a855f7;
-  border-radius: 20px;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 30px rgba(168,85,247,0.4);
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-.logo:hover { transform: scale(1.1); }
+        .control-btn {
+            width: 46px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .control-btn:hover { background: rgba(0,0,0,0.06); }
+        .control-btn.close:hover { background: #e81123; color: white; }
 
-.logo span {
-  font-size: 32px;
-  font-weight: bold;
-}
+        .content { 
+            flex: 1; 
+            padding: 40px 30px 100px 30px; 
+            overflow-y: auto; 
+            scrollbar-width: none;
+        }
+        .content::-webkit-scrollbar { display: none; }
 
-/* ---------- NAV ---------- */
-nav {
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  overflow-x: auto;
-  margin-bottom: 32px;
-}
+        .branding-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 40px;
+            gap: 12px;
+        }
 
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: 0.2s;
-  white-space: nowrap;
-}
+        .branding-text h2 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #000;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
 
-.nav-link:hover {
-  color: white;
-  background: rgba(255,255,255,0.05);
-}
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 12px;
+        }
 
-.nav-active {
-  background: rgba(88,28,135,0.4);
-  color: white;
-}
+        .app-card {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-/* ---------- MAIN ---------- */
-.grid {
-  display: grid;
-  gap: 24px;
-}
-@media (min-width: 768px) {
-  .grid { grid-template-columns: 1fr 1fr; }
-}
+        .app-card:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
 
-.section {
-  padding: 32px;
-}
+        .taskbar {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 52px;
+            background: var(--taskbar-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 4px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
 
-.tags span {
-  display: inline-block;
-  padding: 4px 12px;
-  font-size: 12px;
-  border-radius: 999px;
-  background: rgba(88,28,135,0.4);
-  border: 1px solid rgba(168,85,247,0.3);
-  color: #d8b4fe;
-  margin-right: 6px;
-}
+        .task-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
 
-/* ---------- BUTTONS ---------- */
-.jump-btn {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 14px;
-  padding: 16px;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.jump-btn:hover {
-  background: rgba(88,28,135,0.4);
-  border-color: rgba(168,85,247,0.5);
-}
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.1);
+        }
 
-/* ---------- FOOTER ---------- */
-footer {
-  margin-top: 80px;
-  padding: 32px 0;
-  text-align: center;
-  font-size: 14px;
-  color: #64748b;
-  border-top: 1px solid rgba(168,85,247,0.2);
-}
+        .task-item.active::after {
+            content: "";
+            position: absolute;
+            bottom: 2px;
+            width: 6px;
+            height: 3px;
+            background: var(--win-accent);
+            border-radius: 2px;
+        }
 
-/* ---------- ICONS ---------- */
-.icon {
-  width: 18px;
-  height: 18px;
-  fill: #c084fc;
-}
-</style>
+        @media (max-width: 640px) {
+            .win-app { height: 95vh; width: 100%; border-radius: 12px; }
+            .content { padding: 30px 15px 100px 15px; }
+            .app-grid { grid-template-columns: 1fr; }
+        }
+
+        .fluent-darts { fill: url(#grad-darts); }
+        .fluent-thumb { fill: url(#grad-thumb); }
+        .fluent-cube { fill: url(#grad-cube); }
+    </style>
 </head>
 <body>
 
-<canvas id="void"></canvas>
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true">
+        <defs>
+            <linearGradient id="grad-darts" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff5f5f;" />
+                <stop offset="100%" style="stop-color:#b91d1d;" />
+            </linearGradient>
+            <linearGradient id="grad-thumb" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#22c55e;" />
+                <stop offset="100%" style="stop-color:#15803d;" />
+            </linearGradient>
+            <linearGradient id="grad-cube" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fbbf24;" />
+                <stop offset="100%" style="stop-color:#d97706;" />
+            </linearGradient>
+        </defs>
+    </svg>
 
-<div class="container">
+    <div class="win-app">
+        <div class="title-bar">
+            <div class="flex items-center gap-3">
+                <img src="/marty.png" width="18" height="18" class="rounded-[3px]" 
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230067c0%22/></svg>';">
+                <span class="text-[11px] font-medium text-gray-700">tsmarty.xyz</span>
+            </div>
+            <div class="window-controls">
+                <div class="control-btn"><svg width="10" height="1"><rect width="10" height="1" fill="currentColor"/></svg></div>
+                <div class="control-btn"><svg width="10" height="10"><rect width="9" height="9" x="0.5" y="0.5" fill="none" stroke="currentColor"/></svg></div>
+                <div class="control-btn close"><svg width="10" height="10"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.2"/></svg></div>
+            </div>
+        </div>
 
-<header>
-  <div class="logo" onclick="go('/')"><span>M</span></div>
-  <h1 class="purple-glow" style="font-size:48px;">MARTY</h1>
-  <p style="color:#94a3b8;">marti.</p>
-</header>
+        <div class="content">
+            <div class="branding-box">
+                <img src="/marty.png" alt="Marty" class="w-20 h-20 rounded-2xl shadow-lg border-2 border-white/50" 
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230067c0%22/></svg>';">
+                <div class="branding-text">
+                    <h2>Marty</h2>
+                    <p class="text-sm text-gray-500 font-medium">Also known as Towtik • 2026</p>
+                </div>
+            </div>
 
-<nav class="glass">
-  <div class="nav-link nav-active" onclick="go('/')">
-    🏠 Home
-  </div>
-  <div class="nav-link" onclick="go('/darts')">
-    🎯 Darts
-  </div>
-  <div class="nav-link" onclick="go('/thumbnailgenerator')">
-    🖼️ thumbnail generator
-  </div>
-  <div class="nav-link" onclick="go('/cubemakecraft')">
-    📦 cubemakecraft
-  </div>
-</nav>
+            <div class="max-w-3xl mx-auto">
+                <h3 class="text-xs font-semibold mb-4 px-2 text-gray-400 uppercase tracking-widest">Projects^⁠_⁠^</h3>
+                <div class="app-grid">
+                    <div class="app-card" onclick="window.location.href='/darts'">
+                        <svg viewBox="0 0 48 48" width="54" height="54">
+                            <circle cx="24" cy="24" r="22" class="fluent-darts" />
+                            <circle cx="24" cy="24" r="6" fill="white" />
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-sm">Darts</h3>
+                            <p class="text-[10px] text-gray-500">HTML project like 2025</p>
+                        </div>
+                    </div>
 
-<main class="grid">
+                    <div class="app-card" onclick="window.location.href='/thumbnailgenerator'">
+                        <svg viewBox="0 0 48 48" width="54" height="54">
+                            <rect x="4" y="8" width="40" height="32" rx="6" class="fluent-thumb" />
+                            <circle cx="15" cy="18" r="4" fill="white" fill-opacity="0.8" />
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-sm">Thumbnail Gen</h3>
+                            <p class="text-[10px] text-gray-500">I made this in like 2023:3</p>
+                        </div>
+                    </div>
 
-<section class="glass section">
-  <h2 class="purple-glow">👤 Marty's websit e</h2>
-  <p style="margin:16px 0;color:#cbd5f5;">
-    Clicking any icon performs a page redirect, so beaware ok. Also known as Towtik
-  </p>
-  <div class="tags">
-    <span>🌈⃠  Straight</span>
-    <span>Marty</span>
-    <span>i think im marty</span>
-  </div>
-</section>
+                    <div class="app-card" onclick="window.location.href='/cubemakecraft'">
+                        <svg viewBox="0 0 48 48" width="54" height="54">
+                            <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" class="fluent-cube" />
+                            <path d="M24 4L6 13l18 9 18-9-18-9z" fill="white" fill-opacity="0.3" />
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-sm">CubeMakeCraft</h3>
+                            <p class="text-[10px] text-gray-500">MC clone do not sue pls. Only on PC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<section class="glass section">
-  <h2 class="purple-glow">gejms</h2>
-  <br>
+        <div class="taskbar">
+            <div class="task-item active" title="Home">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#0067c0">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+            </div>
+            
+            <div class="task-item" title="Darts">
+                <svg viewBox="0 0 48 48" width="24" height="24">
+                    <circle cx="24" cy="24" r="22" class="fluent-darts" />
+                    <circle cx="24" cy="24" r="6" fill="white" />
+                </svg>
+            </div>
 
-  <button class="jump-btn" onclick="go('/darts')">
-    <span>🎯 Enter /darts</span>
-    ➜
-  </button>
-  <br>
-  <button class="jump-btn" onclick="go('/thumbnailgenerator')">
-    <span>🖼️ Enter /thumbnailgenerator</span>
-    ➜
-  </button>
-  <br>
-  <button class="jump-btn" onclick="go('/cubemakecraft')">
-    <span>📦 Enter /cubemakecraft</span>
-    ➜
-  </button>
-</section>
+            <div class="task-item" title="Thumbnails">
+                <svg viewBox="0 0 48 48" width="24" height="24">
+                    <rect x="4" y="8" width="40" height="32" rx="6" class="fluent-thumb" />
+                </svg>
+            </div>
 
-</main>
-
-<footer>
-  © <span id="year"></span> Marty • Marty
-</footer>
-
-</div>
-
-<script>
-/* ---------- REDIRECT ---------- */
-function go(path) {
-  window.location.href = path;
-}
-
-/* ---------- YEAR ---------- */
-document.getElementById("year").textContent = new Date().getFullYear();
-
-/* ---------- MOVING VOID ---------- */
-const canvas = document.getElementById("void");
-const ctx = canvas.getContext("2d");
-
-function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-}
-resize();
-addEventListener("resize", resize);
-
-const particles = Array.from({ length: 100 }, () => ({
-  x: Math.random() * canvas.width,
-  y: Math.random() * canvas.height,
-  size: Math.random() * 3 + 1,
-  speed: 0.1 + Math.random() * 0.4,
-  opacity: Math.random(),
-  fade: Math.random() * 0.01 + 0.005
-}));
-
-function draw() {
-  ctx.fillStyle = "#050208";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  for (const p of particles) {
-    p.opacity -= p.fade;
-    if (p.opacity <= 0 || p.opacity >= 1) p.fade *= -1;
-
-    ctx.fillStyle = `rgba(147,51,234,${p.opacity})`;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#9333ea";
-
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-    ctx.fill();
-
-    ctx.shadowBlur = 0;
-    p.y -= p.speed;
-
-    if (p.y < -20) {
-      p.y = canvas.height + 20;
-      p.x = Math.random() * canvas.width;
-    }
-  }
-
-  requestAnimationFrame(draw);
-}
-draw();
-</script>
+            <div class="task-item" title="CubeCraft">
+                <svg viewBox="0 0 48 48" width="24" height="24">
+                    <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" class="fluent-cube" />
+                </svg>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
-
 
