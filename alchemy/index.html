@@ -21,7 +21,7 @@ body {
     background-color: var(--bg-dark);
     color: #f8fafc;
     overflow: hidden;
-    touch-action: none; /* prevents scroll while dragging on mobile */
+    touch-action: none;
 }
 
 .workspace {
@@ -119,11 +119,9 @@ body {
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const GEMINI_API_KEY = "AIzaSyCPWQ3sDVKYS6PGB3b6yX2vrQLQcTceMZ0";
+const GEMINI_API_KEY = "AIzaSyBlF2mRzfhDkDGRH_bPDYY1NoQfVDvgBLU";
 const STORAGE_KEY = "infinite-alchemy-progress";
 
-/* ================= DATA ================= */
 const DEFAULT_ELEMENTS = [
     { name: "Water", emoji: "💧", desc: "The liquid of life." },
     { name: "Fire", emoji: "🔥", desc: "Burning with passion." },
@@ -133,22 +131,21 @@ const DEFAULT_ELEMENTS = [
 
 let library = loadProgress();
 let isCombining = false;
+let lastCombineTime = 0;
 
-/* ================= STORAGE ================= */
 function loadProgress() {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [...DEFAULT_ELEMENTS];
 }
+
 function saveProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
 }
 
-/* ================= DOM ================= */
 const workspace = document.getElementById("workspace");
 const libraryGrid = document.getElementById("library-grid");
 const aiLoading = document.getElementById("ai-loading");
 
-/* ================= UI ================= */
 function renderLibrary() {
     libraryGrid.innerHTML = "";
     library.forEach(el => {
@@ -171,46 +168,46 @@ function spawn(el) {
     drag(card, el);
 }
 
-/* ================= DRAG ================= */
 function drag(el, data) {
     let ox, oy;
-
-    // Desktop
-    el.onmousedown = e => {
-        ox = e.offsetX;
-        oy = e.offsetY;
-        document.onmousemove = m => {
-            el.style.left = m.pageX - ox + "px";
-            el.style.top = m.pageY - oy + "px";
-            checkCollision(el, data);
-        };
-        document.onmouseup = () => document.onmousemove = null;
-    };
-
-    // Mobile
-    el.ontouchstart = e => {
+    el.onmousedown = el.ontouchstart = e => {
         e.preventDefault();
-        const touch = e.touches[0];
-        ox = touch.clientX - el.offsetLeft;
-        oy = touch.clientY - el.offsetTop;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        ox = clientX - el.offsetLeft;
+        oy = clientY - el.offsetTop;
 
-        document.ontouchmove = m => {
-            const t = m.touches[0];
-            el.style.left = t.clientX - ox + "px";
-            el.style.top = t.clientY - oy + "px";
+        function moveHandler(m) {
+            const moveX = m.touches ? m.touches[0].clientX : m.clientX;
+            const moveY = m.touches ? m.touches[0].clientY : m.clientY;
+            el.style.left = moveX - ox + "px";
+            el.style.top = moveY - oy + "px";
             checkCollision(el, data);
-        };
+        }
 
-        document.ontouchend = () => document.ontouchmove = null;
+        document.addEventListener("mousemove", moveHandler);
+        document.addEventListener("touchmove", moveHandler);
+
+        function upHandler() {
+            document.removeEventListener("mousemove", moveHandler);
+            document.removeEventListener("touchmove", moveHandler);
+            document.removeEventListener("mouseup", upHandler);
+            document.removeEventListener("touchend", upHandler);
+        }
+
+        document.addEventListener("mouseup", upHandler);
+        document.addEventListener("touchend", upHandler);
     };
 }
 
-/* ================= COMBINE ================= */
 function checkCollision(active, data) {
-    if (isCombining) return;
+    const now = Date.now();
+    if (isCombining || active.combining || now - lastCombineTime < 200) return;
+
     document.querySelectorAll(".element-card").forEach(other => {
-        if (other === active) return;
+        if (other === active || other.combining) return;
         if (Math.hypot(active.offsetLeft - other.offsetLeft, active.offsetTop - other.offsetTop) < 100) {
+            lastCombineTime = now;
             combine(active, other, data, { name: other.querySelector(".name").innerText });
         }
     });
@@ -218,6 +215,8 @@ function checkCollision(active, data) {
 
 async function combine(a, b, d1, d2) {
     isCombining = true;
+    a.combining = true;
+    b.combining = true;
     a.classList.add("combining");
     b.classList.add("combining");
     aiLoading.classList.remove("hidden");
@@ -232,7 +231,7 @@ async function combine(a, b, d1, d2) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: promptText }] }]
-                }),
+                })
             }
         );
 
@@ -270,13 +269,14 @@ async function combine(a, b, d1, d2) {
         renderLibrary();
     } finally {
         isCombining = false;
+        a.combining = false;
+        b.combining = false;
         a.classList.remove("combining");
         b.classList.remove("combining");
         aiLoading.classList.add("hidden");
     }
 }
 
-/* ================= MODAL ================= */
 function showDiscovery(el) {
     document.getElementById("disco-name").innerText = el.name;
     document.getElementById("disco-emoji").innerText = el.emoji;
@@ -287,7 +287,6 @@ function showDiscovery(el) {
 document.getElementById("collect-btn").onclick = () =>
     document.getElementById("discovery-modal").classList.add("hidden");
 
-/* ================= BUTTONS ================= */
 document.getElementById("clear-workspace").onclick = () =>
     document.querySelectorAll(".element-card").forEach(e => e.remove());
 
@@ -298,7 +297,6 @@ document.getElementById("reset-game").onclick = () => {
     }
 };
 
-/* ================= START ================= */
 renderLibrary();
 </script>
 
