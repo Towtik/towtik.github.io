@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Infinite Alchemy Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-dark: #050508;
+            --panel-bg: rgba(15, 15, 25, 0.85);
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .workspace {
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Large, Beautiful Element Cards */
+        .element-card {
+            width: 140px;
+            height: 160px;
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            position: absolute;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
+            user-select: none;
+        }
+
+        .element-card:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+            border-color: var(--accent);
+            z-index: 1000 !important;
+            box-shadow: 0 20px 45px -10px rgba(59, 130, 246, 0.4);
+        }
+
+        .element-card .emoji { font-size: 4rem; margin-bottom: 10px; }
+        .element-card .name { 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em; 
+            font-size: 0.85rem;
+            color: #f1f5f9;
+        }
+
+        /* Library UI */
+        #library-drawer {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+        }
+
+        .library-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .library-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        /* Animations */
+        @keyframes combine-glow {
+            0% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 50px 20px rgba(59, 130, 246, 0.3); transform: scale(1.2); }
+            100% { box-shadow: 0 0 0 60px rgba(59, 130, 246, 0); transform: scale(0); }
+        }
+        .combining { animation: combine-glow 0.8s forwards; }
+
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <!-- Main Workspace -->
+    <div id="workspace" class="workspace relative overflow-hidden flex-1">
+        <!-- Floating Controls -->
+        <div class="absolute top-6 left-6 z-40 flex gap-4">
+            <button id="clear-workspace" class="px-6 h-14 rounded-2xl bg-slate-800/80 backdrop-blur-md flex items-center justify-center hover:bg-red-900/40 text-xs font-black transition shadow-xl gap-3 border border-white/5">
+                <i class="fas fa-trash-alt text-red-400"></i> CLEAR BOARD
+            </button>
+            <button id="reset-game" class="w-14 h-14 rounded-2xl bg-slate-800/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-700 transition shadow-xl border border-white/5">
+                <i class="fas fa-rotate-left"></i>
+            </button>
+        </div>
+
+        <!-- AI Status -->
+        <div id="ai-loading" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] flex flex-col items-center">
+            <div class="relative w-24 h-24 mb-6">
+                <div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+            <p class="text-blue-400 font-black text-lg uppercase tracking-[0.4em] animate-pulse">Synthesizing...</p>
+        </div>
+    </div>
+
+    <!-- Library Drawer -->
+    <div id="library-drawer" class="h-[40%] bg-slate-950 border-t border-white/10 flex flex-col relative shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <h2 class="font-black text-xl flex items-center gap-3">
+                    <i class="fas fa-flask-vial text-blue-400"></i> ELEMENTS
+                </h2>
+                <span id="count-badge" class="bg-blue-600 px-3 py-1 rounded-full text-xs font-black">4</span>
+            </div>
+            <div class="flex-1 max-w-md mx-8 hidden md:block">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="search-box" placeholder="Search your collection..." class="w-full bg-slate-900 border border-white/10 rounded-2xl px-12 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+            </div>
+            <button id="toggle-library" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        <div id="library-grid" class="flex-1 overflow-x-auto md:overflow-y-auto p-6 flex md:grid md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 no-scrollbar">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- Discovery Modal -->
+    <div id="discovery-modal" class="hidden fixed inset-0 z-[300] modal-bg flex items-center justify-center p-6">
+        <div class="bg-slate-900 p-12 rounded-[4rem] border border-blue-500/30 flex flex-col items-center text-center shadow-[0_0_150px_rgba(59,130,246,0.3)] max-w-md w-full">
+            <div class="relative mb-8">
+                <div class="absolute inset-0 bg-blue-500/20 blur-3xl animate-pulse"></div>
+                <div class="text-[10rem] relative z-10 animate-bounce" id="disco-emoji">✨</div>
+            </div>
+            <p class="text-blue-400 font-black tracking-[0.5em] text-xs uppercase mb-4">New Discovery Unlocked</p>
+            <h2 class="text-6xl font-black mb-6 text-white" id="disco-name">Element</h2>
+            <p class="text-slate-400 text-lg italic mb-10 px-4" id="disco-desc">"A masterpiece of elemental fusion."</p>
+            <button id="collect-btn" class="w-full py-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-3xl font-black text-xl shadow-2xl transition-all active:scale-95">COLLECT</button>
+        </div>
+    </div>
+
+    <!-- Firebase & Logic -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // ==========================================
+        // SET YOUR API KEY HERE FOR YOUR WEBSITE
+        // ==========================================
+        const HARDCODED_API_KEY = "AIzaSyCPWQ3sDVKYS6PGB3b6yX2vrQLQcTceMZ0"; 
+        // ==========================================
+
+        const DEFAULT_ELEMENTS = [
+            { name: "Water", emoji: "💧", desc: "The liquid of life." },
+            { name: "Fire", emoji: "🔥", desc: "Burning with passion." },
+            { name: "Earth", emoji: "🌱", desc: "The solid ground." },
+            { name: "Air", emoji: "💨", desc: "The breath of the sky." }
+        ];
+
+        let state = {
+            library: [...DEFAULT_ELEMENTS],
+            userId: null,
+            db: null,
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'alchemy-infinite-v4'
+        };
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        state.db = getFirestore(app);
+
+        async function initAuth() {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                state.userId = user.uid;
+                loadProgress();
+            }
+        });
+
+        initAuth();
+
+        function loadProgress() {
+            const userDoc = doc(state.db, 'artifacts', state.appId, 'users', state.userId, 'data', 'progress');
+            onSnapshot(userDoc, (snap) => {
+                if (snap.exists()) {
+                    state.library = snap.data().library;
+                    renderLibrary();
+                } else {
+                    saveProgress();
+                }
+            }, (err) => console.error("Firestore error:", err));
+        }
+
+        async function saveProgress() {
+            if (!state.userId) return;
+            const userDoc = doc(state.db, 'artifacts', state.appId, 'users', state.userId, 'data', 'progress');
+            await setDoc(userDoc, { library: state.library });
+            renderLibrary();
+        }
+
+        const workspace = document.getElementById('workspace');
+        const libraryGrid = document.getElementById('library-grid');
+        const aiLoading = document.getElementById('ai-loading');
+
+        function renderLibrary() {
+            const search = document.getElementById('search-box').value.toLowerCase();
+            libraryGrid.innerHTML = '';
+            state.library.filter(el => el.name.toLowerCase().includes(search)).forEach(el => {
+                const div = document.createElement('div');
+                div.className = 'library-item shrink-0 w-40 md:w-auto flex flex-col items-center cursor-pointer';
+                div.innerHTML = `<span class="text-5xl mb-3">${el.emoji}</span><span class="text-xs font-black uppercase truncate w-full tracking-tighter">${el.name}</span>`;
+                div.onclick = () => spawn(el);
+                libraryGrid.appendChild(div);
+            });
+            document.getElementById('count-badge').innerText = state.library.length;
+        }
+
+        function spawn(elData) {
+            const card = document.createElement('div');
+            card.className = 'element-card';
+            card.innerHTML = `<span class="emoji">${elData.emoji}</span><span class="name">${elData.name}</span>`;
+            
+            const rect = workspace.getBoundingClientRect();
+            card.style.left = (rect.width / 2 - 70) + 'px';
+            card.style.top = (rect.height / 2 - 80) + 'px';
+            
+            workspace.appendChild(card);
+            makeDraggable(card, elData);
+        }
+
+        function makeDraggable(el, data) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            const onStart = (e) => {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+                document.onmousemove = onMove;
+                document.ontouchmove = (te) => onMove(te.touches[0]);
+                document.onmouseup = onEnd;
+                document.ontouchend = onEnd;
+                el.style.transition = 'none';
+            };
+
+            const onMove = (e) => {
+                pos1 = pos3 - (e.clientX || e.pageX);
+                pos2 = pos4 - (e.clientY || e.pageY);
+                pos3 = (e.clientX || e.pageX);
+                pos4 = (e.clientY || e.pageY);
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+                checkCollision(el, data);
+            };
+
+            const onEnd = () => {
+                document.onmousemove = null;
+                document.onmouseup = null;
+                document.ontouchmove = null;
+                document.ontouchend = null;
+                el.style.transition = 'transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            };
+
+            el.onmousedown = onStart;
+            el.ontouchstart = (e) => onStart(e.touches[0]);
+        }
+
+        let isCombining = false;
+        async function checkCollision(activeEl, activeData) {
+            if (isCombining) return;
+            const activeRect = activeEl.getBoundingClientRect();
+            const others = document.querySelectorAll('.element-card');
+
+            others.forEach(other => {
+                if (other === activeEl) return;
+                const otherRect = other.getBoundingClientRect();
+                
+                const dist = Math.hypot(
+                    (activeRect.left + 70) - (otherRect.left + 70),
+                    (activeRect.top + 80) - (otherRect.top + 80)
+                );
+
+                if (dist < 100) {
+                    const otherName = other.querySelector('.name').innerText;
+                    const otherData = state.library.find(x => x.name.toUpperCase() === otherName);
+                    combine(activeEl, other, activeData, otherData);
+                }
+            });
+        }
+
+        async function combine(el1, el2, data1, data2) {
+            isCombining = true;
+            el1.classList.add('combining');
+            el2.classList.add('combining');
+            aiLoading.classList.remove('hidden');
+
+            const prompt = `Act as an alchemy game. Mix "${data1.name}" and "${data2.name}". Logic? Return JSON only: {"name": "NAME", "emoji": "EMOJI", "desc": "DESC"}`;
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${HARDCODED_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const json = await res.json();
+                const result = JSON.parse(json.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
+                
+                el1.remove();
+                el2.remove();
+
+                const existing = state.library.find(x => x.name.toLowerCase() === result.name.toLowerCase());
+                if (existing) {
+                    spawn(existing);
+                } else {
+                    state.library.push(result);
+                    await saveProgress();
+                    showDiscovery(result);
+                    spawn(result);
+                }
+            } catch (err) {
+                console.error(err);
+                el1.classList.remove('combining');
+                el2.classList.remove('combining');
+                el1.style.left = (parseInt(el1.style.left) - 100) + 'px';
+            } finally {
+                isCombining = false;
+                aiLoading.classList.add('hidden');
+            }
+        }
+
+        function showDiscovery(el) {
+            document.getElementById('disco-name').innerText = el.name;
+            document.getElementById('disco-emoji').innerText = el.emoji;
+            document.getElementById('disco-desc').innerText = el.desc;
+            document.getElementById('discovery-modal').classList.remove('hidden');
+        }
+
+        document.getElementById('collect-btn').onclick = () => {
+            document.getElementById('discovery-modal').classList.add('hidden');
+        };
+
+        document.getElementById('clear-workspace').onclick = () => {
+            document.querySelectorAll('.element-card').forEach(e => e.remove());
+        };
+
+        document.getElementById('reset-game').onclick = async () => {
+            if(confirm("Start fresh? This will delete all your elements!")) {
+                state.library = [...DEFAULT_ELEMENTS];
+                await saveProgress();
+                window.location.reload();
+            }
+        };
+
+        document.getElementById('search-box').oninput = renderLibrary;
+
+        document.getElementById('toggle-library').onclick = function() {
+            const drawer = document.getElementById('library-drawer');
+            const icon = this.querySelector('i');
+            if (drawer.style.transform === 'translateY(85%)') {
+                drawer.style.transform = 'translateY(0)';
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                drawer.style.transform = 'translateY(85%)';
+                icon.className = 'fas fa-chevron-up';
+            }
+        };
+    </script>
+</body>
+</html>
