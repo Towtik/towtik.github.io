@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tsmarty.xyz</title>
     <script src="https://cdn.tailwindcss.com"></script>
+      <meta property="og:type" content="website">
+  <meta property="og:title" content="tsmarty.xyz">
+  <meta property="og:description" content="My personal website!">
+  <meta property="og:image" content="https://tsmarty.xyz/marty.png">
+  <meta property="og:url" content="https://tsmarty.xyz">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="tsmarty.xyz">
+  <meta name="twitter:description" content="My personal website!">
+  <meta name="twitter:image" content="https://tsmarty.xyz/marty.png">
+</head>
     <style>
         @font-face {
             font-family: 'Segoe UI Variable';
@@ -130,7 +141,7 @@
 
         .taskbar {
             position: absolute;
-            bottom: 50px; /* moved further up for visibility */
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             height: 52px;
@@ -217,14 +228,13 @@
         </div>
     </div>
 
-    <div class="content">
-        <div class="branding-box">
-            <img src="/marty.png" alt="Marty" class="w-20 h-20 rounded-2xl shadow-lg border-2 border-white/50">
-            <div class="branding-text">
-                <h2>Marty</h2>
-                <p class="text-sm text-gray-500 font-medium">Also known as Towtik • 2026</p>
-            </div>
-        </div>
+<div class="content"> <div class="branding-box"> <img src="/marty.png" alt="Marty" class="w-20 h-20 rounded-2xl shadow-lg border-2 border-white/50"> <div class="branding-text"> <h2>Marty</h2> <p class="text-sm text-gray-500">
+    <span class="font-bold text-darkgrey">
+        I own six domains yes.. SIX.. (because why not:p)
+    </span>
+
+            <h3 class="text-xs font-semibold mb-4 px-2 text-gray-400 uppercase tracking-widest">Also known as Towtik • 2026</h3>
+        <div class="max-w-3xl mx-auto">
 
         <div class="max-w-3xl mx-auto">
             <h3 class="text-xs font-semibold mb-4 px-2 text-gray-400 uppercase tracking-widest">Projects^⁠_⁠^</h3>
@@ -261,13 +271,11 @@
                         <p class="text-[10px] text-gray-500">MC clone do not sue pls. Only on PC</p>
                     </div>
                 </div>
- <div class="app-card" onclick="window.location.href='/alchemy'">
+<div class="app-card opacity-50 pointer-events-none cursor-not-allowed">
     <svg viewBox="0 0 200 200" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
-        <!-- Bottle top -->
         <rect x="75" y="10" width="50" height="15" rx="6" fill="#444"/>
         <rect x="85" y="20" width="30" height="40" rx="5" fill="#2c2c2c"/>
 
-        <!-- Bottle body -->
         <path d="
             M60 60
             L140 60
@@ -276,7 +284,6 @@
             Z
         " fill="#3a3a3a" stroke="#888" stroke-width="6"/>
 
-        <!-- Liquid -->
         <path d="
             M55 120
             Q100 135 145 120
@@ -285,25 +292,21 @@
             Z
         " fill="#7c3aed"/>
 
-        <!-- Highlight -->
         <path d="
             M75 70
             Q65 110 80 145
         " stroke="#ffffff" stroke-width="6" opacity="0.3" fill="none"/>
 
-        <!-- Rune -->
         <circle cx="100" cy="115" r="12" stroke="#d8b4fe" stroke-width="5" fill="none"/>
         <line x1="100" y1="103" x2="100" y2="127" stroke="#d8b4fe" stroke-width="5"/>
     </svg>
 
     <div>
         <h3 class="font-semibold text-sm">Alchemy</h3>
-        <p class="text-[10px] text-gray-500">Alchemy test it out:p PS: STOPS WORKING ON MARCH 1ST 2026</p>
+        <p class="text-[10px] text-gray-500">doesn't work anymore and I'm not planning on fixing it</p>
     </div>
 </div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="taskbar">
         <div class="task-item active" title="Home" onclick="window.location.href='index.html'">
@@ -327,13 +330,11 @@
                 <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" class="fluent-cube" />
             </svg>
         </div>
-<div class="task-item" title="Alchemy" onclick="window.location.href='/alchemy'">
+<div class="task-item opacity-50 pointer-events-none cursor-not-allowed" title="Alchemy">
     <svg viewBox="0 0 200 200" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-        <!-- Bottle top -->
         <rect x="75" y="10" width="50" height="15" rx="6" fill="#444"/>
         <rect x="85" y="20" width="30" height="40" rx="5" fill="#2c2c2c"/>
 
-        <!-- Bottle body -->
         <path d="
             M60 60
             L140 60
@@ -342,7 +343,6 @@
             Z
         " fill="#3a3a3a" stroke="#888" stroke-width="6"/>
 
-        <!-- Liquid -->
         <path d="
             M55 120
             Q100 135 145 120
@@ -351,20 +351,18 @@
             Z
         " fill="#7c3aed"/>
 
-        <!-- Highlight -->
         <path d="
             M75 70
             Q65 110 80 145
         " stroke="#ffffff" stroke-width="6" opacity="0.3" fill="none"/>
 
-        <!-- Rune -->
         <circle cx="100" cy="115" r="12" stroke="#d8b4fe" stroke-width="5" fill="none"/>
         <line x1="100" y1="103" x2="100" y2="127" stroke="#d8b4fe" stroke-width="5"/>
     </svg>
 </div>
+
         </div>
     </div>
 </div>
 </body>
 </html>
-
