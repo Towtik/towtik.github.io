@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This or that?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: #f8fafc; min-height: 100vh; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .choice-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; border: 2px solid transparent; }
+        .choice-card:hover { transform: translateY(-8px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
+        .filter-btn { transition: all 0.2s; border: 1px solid #1e293b; font-weight: 600; }
+        .filter-btn:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+        .filter-btn.primary { background: #38bdf8; color: #020617; border-color: #38bdf8; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+    <header class="w-full max-w-4xl text-center mb-8">
+        <h1 class="text-4xl font-800 tracking-tighter text-sky-400 mb-2">This<span class="text-white">‎ OR</span><class="text-4xl font-800 tracking-tighter text-sky-400 mb-2"> ‎ That</h1>
+        <p class="text-slate-500 uppercase tracking-widest text-[10px] font-bold">Complete Global Elimination</p>
+    </header>
+
+    <div id="setup-screen" class="w-full max-w-4xl glass rounded-3xl p-8 animate-in">
+        <h2 class="text-xl font-bold mb-6 text-center">Select a Tournament Pool</h2>
+        
+        <div class="space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="startTournament('World')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🌍</span>
+                    <span>The Whole World</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">195+ Countries</span>
+                </button>
+                <button onclick="startTournament('Europe')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🇪🇺</span>
+                    <span>Europe</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">44 Countries</span>
+                </button>
+                <button onclick="startTournament('Asia')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🏮</span>
+                    <span>Asia</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">48 Countries</span>
+                </button>
+                <button onclick="startTournament('Americas')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🗽</span>
+                    <span>Americas</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">35 Countries</span>
+                </button>
+                <button onclick="startTournament('Africa')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🦁</span>
+                    <span>Africa</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">54 Countries</span>
+                </button>
+                <button onclick="startTournament('Oceania')" class="filter-btn primary py-4 rounded-2xl text-lg flex flex-col items-center justify-center">
+                    <span class="text-2xl">🏄</span>
+                    <span>Oceania</span>
+                    <span class="text-[10px] opacity-70 uppercase mt-1">14 Countries</span>
+                </button>
+            </div>
+            <div class="pt-4 border-t border-slate-800">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-4 font-bold px-2 text-center">Detailed European Brackets</p>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <button onclick="startTournament('Central Europe')" class="filter-btn py-2.5 rounded-xl text-xs bg-slate-900/50">Central Europe</button>
+                    <button onclick="startTournament('East Europe')" class="filter-btn py-2.5 rounded-xl text-xs bg-slate-900/50">East Europe</button>
+                    <button onclick="startTournament('North Europe')" class="filter-btn py-2.5 rounded-xl text-xs bg-slate-900/50">North Europe</button>
+                    <button onclick="startTournament('South Europe')" class="filter-btn py-2.5 rounded-xl text-xs bg-slate-900/50">South Europe</button>
+                    <button onclick="startTournament('West Europe')" class="filter-btn py-2.5 rounded-xl text-xs bg-slate-900/50">West Europe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="game-screen" class="hidden w-full max-w-5xl flex flex-col items-center">
+        <div class="w-full max-w-2xl mb-8 space-y-2">
+            <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400">
+                <span id="round-label">Round 1</span>
+                <span id="match-label">Match 1/10</span>
+            </div>
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="progress" class="progress-bar h-full bg-sky-400 w-0"></div>
+            </div>
+        </div>
+
+        <div class="relative grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 hidden md:block">
+                <div class="w-14 h-14 rounded-full glass border-2 border-sky-500/30 flex items-center justify-center font-black italic text-sky-400 shadow-2xl">VS</div>
+            </div>
+
+            <div id="card-left" onclick="vote(0)" class="choice-card glass rounded-[2.5rem] p-12 flex flex-col items-center text-center">
+                <span id="flag-0" class="text-8xl mb-6">🏳️</span>
+                <h2 id="name-0" class="text-3xl font-bold mb-2">---</h2>
+                <p id="reg-0" class="text-xs text-sky-400 font-bold tracking-widest uppercase">Region</p>
+            </div>
+
+            <div id="card-right" onclick="vote(1)" class="choice-card glass rounded-[2.5rem] p-12 flex flex-col items-center text-center">
+                <span id="flag-1" class="text-8xl mb-6">🏳️</span>
+                <h2 id="name-1" class="text-3xl font-bold mb-2">---</h2>
+                <p id="reg-1" class="text-xs text-sky-400 font-bold tracking-widest uppercase">Region</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="winner-screen" class="hidden w-full max-w-2xl glass rounded-[3rem] p-12 text-center animate-in shadow-2xl">
+        <p class="text-sky-400 font-bold tracking-[0.3em] uppercase mb-4">The Ultimate Favorite</p>
+        <span id="winner-flag" class="text-9xl mb-6 block">🏆</span>
+        <h2 id="winner-name" class="text-5xl font-black mb-8 italic">World Champion</h2>
+        <button onclick="location.reload()" class="bg-white text-black px-10 py-4 rounded-full font-bold hover:bg-sky-400 transition-colors">Start New Tournament</button>
+    </div>
+
+    <script>
+        const allCountries = [
+            // CENTRAL EUROPE
+            {n:"Austria",f:"🇦🇹",r:"Central Europe"}, {n:"Czechia",f:"🇨🇿",r:"Central Europe"}, {n:"Germany",f:"🇩🇪",r:"Central Europe"}, {n:"Hungary",f:"🇭🇺",r:"Central Europe"}, {n:"Liechtenstein",f:"🇱🇮",r:"Central Europe"}, {n:"Poland",f:"🇵🇱",r:"Central Europe"}, {n:"Slovakia",f:"🇸🇰",r:"Central Europe"}, {n:"Switzerland",f:"🇨🇭",r:"Central Europe"},
+            // EAST EUROPE
+            {n:"Belarus",f:"🇧🇾",r:"East Europe"}, {n:"Bulgaria",f:"🇧🇬",r:"East Europe"}, {n:"Moldova",f:"🇲🇩",r:"East Europe"}, {n:"Romania",f:"🇷🇴",r:"East Europe"}, {n:"Russia",f:"🇷🇺",r:"East Europe"}, {n:"Ukraine",f:"🇺🇦",r:"East Europe"},
+            // NORTH EUROPE
+            {n:"Denmark",f:"🇩🇰",r:"North Europe"}, {n:"Estonia",f:"🇪🇪",r:"North Europe"}, {n:"Finland",f:"🇫🇮",r:"North Europe"}, {n:"Iceland",f:"🇮🇸",r:"North Europe"}, {n:"Ireland",f:"🇮🇪",r:"North Europe"}, {n:"Latvia",f:"🇱🇻",r:"North Europe"}, {n:"Lithuania",f:"🇱🇹",r:"North Europe"}, {n:"Norway",f:"🇳🇴",r:"North Europe"}, {n:"Sweden",f:"🇸🇪",r:"North Europe"}, {n:"United Kingdom",f:"🇬🇧",r:"North Europe"},
+            // SOUTH EUROPE
+            {n:"Albania",f:"🇦🇱",r:"South Europe"}, {n:"Andorra",f:"🇦🇩",r:"South Europe"}, {n:"Bosnia",f:"🇧🇦",r:"South Europe"}, {n:"Croatia",f:"🇭🇷",r:"South Europe"}, {n:"Greece",f:"🇬🇷",r:"South Europe"}, {n:"Italy",f:"🇮🇹",r:"South Europe"}, {n:"Malta",f:"🇲🇹",r:"South Europe"}, {n:"Montenegro",f:"🇲🇪",r:"South Europe"}, {n:"North Macedonia",f:"🇲🇰",r:"South Europe"}, {n:"Portugal",f:"🇵🇹",r:"South Europe"}, {n:"San Marino",f:"🇸🇲",r:"South Europe"}, {n:"Serbia",f:"🇷🇸",r:"South Europe"}, {n:"Slovenia",f:"🇸🇮",r:"South Europe"}, {n:"Spain",f:"🇪🇸",r:"South Europe"}, {n:"Vatican City",f:"🇻🇦",r:"South Europe"},
+            // WEST EUROPE
+            {n:"Belgium",f:"🇧🇪",r:"West Europe"}, {n:"France",f:"🇫🇷",r:"West Europe"}, {n:"Luxembourg",f:"🇱🇺",r:"West Europe"}, {n:"Monaco",f:"🇲🇨",r:"West Europe"}, {n:"Netherlands",f:"🇳🇱",r:"West Europe"},
+            // ASIA
+            {n:"Afghanistan",f:"🇦🇫",r:"Asia"}, {n:"Armenia",f:"🇦🇲",r:"Asia"}, {n:"Azerbaijan",f:"🇦🇿",r:"Asia"}, {n:"Bahrain",f:"🇧🇭",r:"Asia"}, {n:"Bangladesh",f:"🇧🇩",r:"Asia"}, {n:"Bhutan",f:"🇧🇹",r:"Asia"}, {n:"Brunei",f:"🇧🇳",r:"Asia"}, {n:"Cambodia",f:"🇰🇭",r:"Asia"}, {n:"China",f:"🇨🇳",r:"Asia"}, {n:"Cyprus",f:"🇨🇾",r:"Asia"}, {n:"Georgia",f:"🇬🇪",r:"Asia"}, {n:"India",f:"🇮🇳",r:"Asia"}, {n:"Indonesia",f:"🇮🇩",r:"Asia"}, {n:"Iran",f:"🇮🇷",r:"Asia"}, {n:"Iraq",f:"🇮🇶",r:"Asia"}, {n:"Israel",f:"🇮🇱",r:"Asia"}, {n:"Japan",f:"🇯🇵",r:"Asia"}, {n:"Jordan",f:"🇯🇴",r:"Asia"}, {n:"Kazakhstan",f:"🇰🇿",r:"Asia"}, {n:"Kuwait",f:"🇰🇼",r:"Asia"}, {n:"Kyrgyzstan",f:"🇰🇬",r:"Asia"}, {n:"Laos",f:"🇱🇦",r:"Asia"}, {n:"Lebanon",f:"🇱🇧",r:"Asia"}, {n:"Malaysia",f:"🇲🇾",r:"Asia"}, {n:"Maldives",f:"🇲🇻",r:"Asia"}, {n:"Mongolia",f:"🇲🇳",r:"Asia"}, {n:"Myanmar",f:"🇲🇲",r:"Asia"}, {n:"Nepal",f:"🇳🇵",r:"Asia"}, {n:"North Korea",f:"🇰🇵",r:"Asia"}, {n:"Oman",f:"🇴🇲",r:"Asia"}, {n:"Pakistan",f:"🇵🇰",r:"Asia"}, {n:"Palestine",f:"🇵🇸",r:"Asia"}, {n:"Philippines",f:"🇵🇭",r:"Asia"}, {n:"Qatar",f:"🇶🇦",r:"Asia"}, {n:"Saudi Arabia",f:"🇸🇦",r:"Asia"}, {n:"Singapore",f:"🇸🇬",r:"Asia"}, {n:"South Korea",f:"🇰🇷",r:"Asia"}, {n:"Sri Lanka",f:"🇱🇰",r:"Asia"}, {n:"Syria",f:"🇸🇾",r:"Asia"}, {n:"Taiwan",f:"🇹🇼",r:"Asia"}, {n:"Tajikistan",f:"🇹🇯",r:"Asia"}, {n:"Thailand",f:"🇹🇭",r:"Asia"}, {n:"Timor-Leste",f:"🇹🇱",r:"Asia"}, {n:"Turkey",f:"🇹🇷",r:"Asia"}, {n:"Turkmenistan",f:"🇹🇲",r:"Asia"}, {n:"UAE",f:"🇦🇪",r:"Asia"}, {n:"Uzbekistan",f:"🇺🇿",r:"Asia"}, {n:"Vietnam",f:"🇻🇳",r:"Asia"}, {n:"Yemen",f:"🇾🇪",r:"Asia"},
+            // AMERICAS
+            {n:"Antigua",f:"🇦🇬",r:"Americas"}, {n:"Argentina",f:"🇦🇷",r:"Americas"}, {n:"Bahamas",f:"🇧🇸",r:"Americas"}, {n:"Barbados",f:"🇧🇧",r:"Americas"}, {n:"Belize",f:"🇧🇿",r:"Americas"}, {n:"Bolivia",f:"🇧🇴",r:"Americas"}, {n:"Brazil",f:"🇧🇷",r:"Americas"}, {n:"Canada",f:"🇨🇦",r:"Americas"}, {n:"Chile",f:"🇨🇱",r:"Americas"}, {n:"Colombia",f:"🇨🇴",r:"Americas"}, {n:"Costa Rica",f:"🇨🇷",r:"Americas"}, {n:"Cuba",f:"🇨🇺",r:"Americas"}, {n:"Dominica",f:"🇩🇲",r:"Americas"}, {n:"Dominican Republic",f:"🇩🇴",r:"Americas"}, {n:"Ecuador",f:"🇪🇨",r:"Americas"}, {n:"El Salvador",f:"🇸🇻",r:"Americas"}, {n:"Grenada",f:"🇬🇩",r:"Americas"}, {n:"Guatemala",f:"🇬🇹",r:"Americas"}, {n:"Guyana",f:"🇬🇾",r:"Americas"}, {n:"Haiti",f:"🇭🇹",r:"Americas"}, {n:"Honduras",f:"🇭🇳",r:"Americas"}, {n:"Jamaica",f:"🇯🇲",r:"Americas"}, {n:"Mexico",f:"🇲🇽",r:"Americas"}, {n:"Nicaragua",f:"🇳🇮",r:"Americas"}, {n:"Panama",f:"🇵🇦",r:"Americas"}, {n:"Paraguay",f:"🇵🇾",r:"Americas"}, {n:"Peru",f:"🇵🇪",r:"Americas"}, {n:"Saint Kitts",f:"🇰🇳",r:"Americas"}, {n:"Saint Lucia",f:"🇱🇨",r:"Americas"}, {n:"Saint Vincent",f:"🇻🇨",r:"Americas"}, {n:"Suriname",f:"🇸🇷",r:"Americas"}, {n:"Trinidad",f:"🇹🇹",r:"Americas"}, {n:"USA",f:"🇺🇸",r:"Americas"}, {n:"Uruguay",f:"🇺🇾",r:"Americas"}, {n:"Venezuela",f:"🇻🇪",r:"Americas"},
+            // AFRICA
+            {n:"Algeria",f:"🇩🇿",r:"Africa"}, {n:"Angola",f:"🇦🇴",r:"Africa"}, {n:"Benin",f:"🇧🇯",r:"Africa"}, {n:"Botswana",f:"🇧🇼",r:"Africa"}, {n:"Burkina Faso",f:"🇧🇫",r:"Africa"}, {n:"Burundi",f:"🇧🇮",r:"Africa"}, {n:"Cabo Verde",f:"🇨🇻",r:"Africa"}, {n:"Cameroon",f:"🇨🇲",r:"Africa"}, {n:"CAR",f:"🇨🇫",r:"Africa"}, {n:"Chad",f:"🇹🇩",r:"Africa"}, {n:"Comoros",f:"🇰🇲",r:"Africa"}, {n:"Congo",f:"🇨🇬",r:"Africa"}, {n:"DR Congo",f:"🇨🇩",r:"Africa"}, {n:"Djibouti",f:"🇩🇯",r:"Africa"}, {n:"Egypt",f:"🇪🇬",r:"Africa"}, {n:"Equatorial Guinea",f:"🇬🇶",r:"Africa"}, {n:"Eritrea",f:"🇪🇷",r:"Africa"}, {n:"Eswatini",f:"🇸🇿",r:"Africa"}, {n:"Ethiopia",f:"🇪🇹",r:"Africa"}, {n:"Gabon",f:"🇬🇦",r:"Africa"}, {n:"Gambia",f:"🇬🇲",r:"Africa"}, {n:"Ghana",f:"🇬🇭",r:"Africa"}, {n:"Guinea",f:"🇬🇳",r:"Africa"}, {n:"Guinea-Bissau",f:"🇬🇼",r:"Africa"}, {n:"Ivory Coast",f:"🇨🇮",r:"Africa"}, {n:"Kenya",f:"🇰🇪",r:"Africa"}, {n:"Lesotho",f:"🇱🇸",r:"Africa"}, {n:"Liberia",f:"🇱🇷",r:"Africa"}, {n:"Libya",f:"🇱🇾",r:"Africa"}, {n:"Madagascar",f:"🇲🇬",r:"Africa"}, {n:"Malawi",f:"🇲🇼",r:"Africa"}, {n:"Mali",f:"🇲🇱",r:"Africa"}, {n:"Mauritania",f:"🇲🇷",r:"Africa"}, {n:"Mauritius",f:"🇲🇺",r:"Africa"}, {n:"Morocco",f:"🇲🇦",r:"Africa"}, {n:"Mozambique",f:"🇲🇿",r:"Africa"}, {n:"Namibia",f:"🇳🇦",r:"Africa"}, {n:"Niger",f:"🇳🇪",r:"Africa"}, {n:"Nigeria",f:"🇳🇬",r:"Africa"}, {n:"Rwanda",f:"🇷🇼",r:"Africa"}, {n:"Sao Tome",f:"🇸🇹",r:"Africa"}, {n:"Senegal",f:"🇸🇳",r:"Africa"}, {n:"Seychelles",f:"🇸🇨",r:"Africa"}, {n:"Sierra Leone",f:"🇸🇱",r:"Africa"}, {n:"Somalia",f:"🇸🇴",r:"Africa"}, {n:"South Africa",f:"🇿🇦",r:"Africa"}, {n:"South Sudan",f:"🇸🇸",r:"Africa"}, {n:"Sudan",f:"🇸🇩",r:"Africa"}, {n:"Tanzania",f:"🇹🇿",r:"Africa"}, {n:"Togo",f:"🇹🇬",r:"Africa"}, {n:"Tunisia",f:"🇹🇳",r:"Africa"}, {n:"Uganda",f:"🇺🇬",r:"Africa"}, {n:"Zambia",f:"🇿🇲",r:"Africa"}, {n:"Zimbabwe",f:"🇿🇼",r:"Africa"},
+            // OCEANIA
+            {n:"Australia",f:"🇦🇺",r:"Oceania"}, {n:"Fiji",f:"🇫🇯",r:"Oceania"}, {n:"Kiribati",f:"🇰🇮",r:"Oceania"}, {n:"Marshall Islands",f:"🇲🇭",r:"Oceania"}, {n:"Micronesia",f:"🇫🇲",r:"Oceania"}, {n:"Nauru",f:"🇳🇷",r:"Oceania"}, {n:"New Zealand",f:"🇳🇿",r:"Oceania"}, {n:"Palau",f:"🇵🇼",r:"Oceania"}, {n:"Papua New Guinea",f:"🇵🇬",r:"Oceania"}, {n:"Samoa",f:"🇼🇸",r:"Oceania"}, {n:"Solomon Islands",f:"🇸🇧",r:"Oceania"}, {n:"Tonga",f:"🇹🇴",r:"Oceania"}, {n:"Tuvalu",f:"🇹🇻",r:"Oceania"}, {n:"Vanuatu",f:"🇻🇺",r:"Oceania"}
+        ];
+
+        let tournamentPool = [];
+        let winners = [];
+        let matchIdx = 0;
+        let round = 1;
+
+        function startTournament(region) {
+            let pool = [];
+            if (region === 'World') pool = [...allCountries];
+            else if (region === 'Europe') pool = allCountries.filter(c => c.r.includes('Europe'));
+            else pool = allCountries.filter(c => c.r === region);
+
+            tournamentPool = pool.sort(() => Math.random() - 0.5);
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            updateMatch();
+        }
+
+        function updateMatch() {
+            if (matchIdx * 2 >= tournamentPool.length) {
+                tournamentPool = [...winners];
+                winners = [];
+                matchIdx = 0;
+                round++;
+
+                if (tournamentPool.length === 1) {
+                    finish(tournamentPool[0]);
+                    return;
+                }
+            }
+
+            const c1 = tournamentPool[matchIdx * 2];
+            const c2 = tournamentPool[matchIdx * 2 + 1];
+
+            if (!c2) {
+                winners.push(c1);
+                matchIdx++;
+                updateMatch();
+                return;
+            }
+
+            const totalMatchesInRound = Math.floor(tournamentPool.length / 2);
+            document.getElementById('round-label').innerText = tournamentPool.length === 2 ? "The Grand Finale" : `Round ${round}`;
+            document.getElementById('match-label').innerText = `Match ${matchIdx + 1} / ${totalMatchesInRound}`;
+            document.getElementById('progress').style.width = `${(matchIdx / totalMatchesInRound) * 100}%`;
+
+            setCard(0, c1);
+            setCard(1, c2);
+        }
+
+        function setCard(side, country) {
+            document.getElementById(`flag-${side}`).innerText = country.f;
+            document.getElementById(`name-${side}`).innerText = country.n;
+            document.getElementById(`reg-${side}`).innerText = country.r;
+            const el = document.getElementById(side === 0 ? 'card-left' : 'card-right');
+            el.classList.remove('animate-in');
+            void el.offsetWidth;
+            el.classList.add('animate-in');
+        }
+
+        function vote(idx) {
+            winners.push(tournamentPool[matchIdx * 2 + idx]);
+            matchIdx++;
+            updateMatch();
+        }
+
+        function finish(winner) {
+            document.getElementById('game-screen').classList.add('hidden');
+            const ws = document.getElementById('winner-screen');
+            ws.classList.remove('hidden');
+            document.getElementById('winner-flag').innerText = winner.f;
+            document.getElementById('winner-name').innerText = winner.n;
+        }
+
+        window.onkeydown = (e) => {
+            if (e.key === 'ArrowLeft') vote(0);
+            if (e.key === 'ArrowRight') vote(1);
+        };
+    </script>
+</body>
+</html>
