@@ -283,6 +283,37 @@
         <p class="text-[10px] text-gray-500">idk a short domain name no plans for it tbh</p>
     </div>
 </div>
+<div class="app-card" onclick="window.location.href='/thisorthat'">
+    <svg viewBox="0 0 300 300" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="globeGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#a0d8f1"/>
+                <stop offset="100%" stop-color="#005f73"/>
+            </radialGradient>
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.4"/>
+            </filter>
+        </defs>
+
+        <circle cx="150" cy="150" r="100" fill="url(#globeGradient)" filter="url(#shadow)"/>
+
+        <g stroke="#ffffff66" stroke-width="1" fill="none">
+            <ellipse cx="150" cy="150" rx="100" ry="20"/>
+            <ellipse cx="150" cy="150" rx="100" ry="40"/>
+            <ellipse cx="150" cy="150" rx="100" ry="60"/>
+            <ellipse cx="150" cy="150" rx="100" ry="80"/>
+        </g>
+
+        <g stroke="#ffffff66" stroke-width="1" fill="none">
+            <path d="M150,50 A100,100 0 0 1 250,150 A100,100 0 0 1 150,250 A100,100 0 0 1 50,150 A100,100 0 0 1 150,50"/>
+            <path d="M150,50 A100,100 0 0 0 250,150 A100,100 0 0 0 150,250 A100,100 0 0 0 50,150 A100,100 0 0 0 150,50"/>
+        </g>
+    </svg>
+    <div>
+        <h3 class="font-semibold text-sm">This or that (Countries)</h3>
+        <p class="text-[10px] text-gray-500">Which country do you like better?</p>
+    </div>
+</div>
 <div class="app-card opacity-50 pointer-events-none cursor-not-allowed">
     <svg viewBox="0 0 200 200" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
         <rect x="75" y="10" width="50" height="15" rx="6" fill="#444"/>
@@ -352,6 +383,33 @@
         </defs>
         <path d="M24 4L42 13v22L24 44 6 35V13L24 4z" fill="url(#pwGradient)" />
         <path d="M19 16v16M19 16h6a4 4 0 0 1 0 8h-6" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    </svg>
+</div>
+<div class="task-item" title="ThisOrThat" onclick="window.location.href='/thisorthat'">
+    <svg viewBox="0 0 300 300" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="globeGradientSmall" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#a0d8f1"/>
+                <stop offset="100%" stop-color="#005f73"/>
+            </radialGradient>
+            <filter id="shadowSmall" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.4"/>
+            </filter>
+        </defs>
+
+        <circle cx="150" cy="150" r="100" fill="url(#globeGradientSmall)" filter="url(#shadowSmall)"/>
+
+        <g stroke="#ffffff66" stroke-width="1" fill="none">
+            <ellipse cx="150" cy="150" rx="100" ry="20"/>
+            <ellipse cx="150" cy="150" rx="100" ry="40"/>
+            <ellipse cx="150" cy="150" rx="100" ry="60"/>
+            <ellipse cx="150" cy="150" rx="100" ry="80"/>
+        </g>
+
+        <g stroke="#ffffff66" stroke-width="1" fill="none">
+            <path d="M150,50 A100,100 0 0 1 250,150 A100,100 0 0 1 150,250 A100,100 0 0 1 50,150 A100,100 0 0 1 150,50"/>
+            <path d="M150,50 A100,100 0 0 0 250,150 A100,100 0 0 0 150,250 A100,100 0 0 0 50,150 A100,100 0 0 0 150,50"/>
+        </g>
     </svg>
 </div>
 <div class="task-item opacity-50 pointer-events-none cursor-not-allowed" title="Alchemy">
