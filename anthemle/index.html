@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anthemle - Guess the National Anthem</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #07090e;
+      background-image: 
+        radial-gradient(at 50% 0%, rgba(30, 41, 59, 0.5) 0px, transparent 60%),
+        radial-gradient(at 0% 100%, rgba(15, 23, 42, 0.4) 0px, transparent 50%);
+    }
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07090e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1b2336;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2e3b56;
+    }
+    /* Premium glow card accent */
+    .glow-card {
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.12);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <audio id="anthem-media-element" preload="auto" class="hidden"></audio>
+
+  <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <header class="border-b border-slate-900/60 bg-[#0a0d16]/95 sticky top-0 z-45 px-4 py-3.5 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="bg-gradient-to-br from-indigo-600 to-violet-500 text-white w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-600/20">
+          🌍
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            Anthemle
+          </h1>
+          <p class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">National Anthem Guessing Game</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="bg-[#101424] text-[11px] px-3 py-1.5 rounded-full border border-slate-800 flex items-center gap-1.5">
+          <span class="text-amber-400 font-bold">🔥 Streak:</span>
+          <span id="streak-counter" class="text-slate-100 font-black">0</span>
+        </div>
+        <button id="btn-help" class="p-2 bg-[#101424] hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800/80 transition-all text-xs font-semibold">
+          ❓
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto w-full px-4 pt-6">
+    <div class="flex items-center justify-center gap-1.5 bg-[#0a0d16] p-1 rounded-full border border-slate-900/80 max-w-sm mx-auto shadow-xl">
+      <button id="tab-classic" class="flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all bg-indigo-600 text-white shadow">
+        🔴 Classic Mode
+      </button>
+      <button id="tab-unlimited" class="flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
+        🌀 Unlimited Mode
+      </button>
+    </div>
+  </div>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col items-center gap-5 justify-start">
+
+    <div class="w-full text-center py-6 px-4 bg-[#0a0d16] rounded-2xl border border-slate-900/80 shadow-2xl relative overflow-hidden glow-card">
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+      
+      <div class="w-10 h-10 bg-indigo-600/15 rounded-full flex items-center justify-center mx-auto mb-2 border border-indigo-500/20">
+        <span class="text-xl">🎵</span>
+      </div>
+      
+      <h2 class="text-xl md:text-2xl font-black text-white tracking-wide">
+        Guess The Country by National Anthem
+      </h2>
+      <p class="text-slate-400 text-xs mt-1">
+        Listen to the melody and reveal clues with every guess! <span class="text-indigo-400 font-bold">🔥 Streak <span id="streak-banner-val">0</span></span>
+      </p>
+
+      <button id="btn-how-to-play" class="mt-4 px-4 py-1.5 rounded-lg border border-cyan-500/30 text-cyan-400 text-xs font-bold hover:bg-cyan-500/5 transition-all inline-flex items-center gap-1">
+        <span>ℹ️</span> How to Play
+      </button>
+    </div>
+
+    <div class="w-full max-w-md bg-[#0a0d16] border border-slate-900/80 p-5 rounded-2xl shadow-xl flex flex-col items-center gap-4">
+      <div class="flex items-center justify-between w-full">
+        <span id="guess-counter" class="text-xs text-slate-500 font-bold uppercase tracking-wider">
+          Attempt 1 / 6
+        </span>
+        <span id="limit-badge" class="text-xs font-mono px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded border border-indigo-500/20 font-bold">
+          Limit: 1s
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4 w-full">
+        <button id="btn-play" class="w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all shadow-lg active:scale-95 disabled:opacity-50">
+          <svg id="loading-spinner" class="w-6 h-6 animate-spin text-white hidden" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <svg id="play-icon" class="w-6 h-6 fill-current ml-1" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <svg id="pause-icon" class="w-6 h-6 fill-current hidden" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+
+        <div class="flex-1">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono mb-1">
+            <span id="current-time-lbl">0:00</span>
+            <span id="max-time-lbl">0:02</span>
+          </div>
+          <div class="h-2 bg-slate-950 rounded-full overflow-hidden relative border border-slate-900">
+            <div id="audio-progress" class="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-indigo-500 to-rose-500 transition-all duration-100" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="audio-status-msg" class="text-[10px] text-slate-500 text-center font-medium">
+        Press play to listen. Incorrect guesses unlock up to 100 seconds!
+      </div>
+
+      <div class="w-full text-center flex flex-col gap-1 mt-2 border-t border-slate-900/60 pt-3">
+
+        <p class="text-[9px] text-slate-500 font-semibold">Audio troubleshooting tools</p>
+
+        <div class="flex gap-2 justify-center">
+
+          <button id="btn-audio-troubleshoot" disabled class="text-[10px] bg-slate-900 hover:bg-slate-800 text-indigo-400 px-3 py-1 rounded-md border border-slate-800 transition-colors">
+
+            🔗 UNAVAILABLE
+
+          </button>
+
+          <button id="btn-audio-direct-play" class="text-[10px] bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 px-3 py-1 rounded-md border border-indigo-900/50 transition-colors">
+
+            ⚡ Direct Play Trigger
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="input-container" class="w-full max-w-md relative z-30 flex flex-col items-center gap-3">
+      <div class="relative w-full">
+        <input
+          id="country-input"
+          type="text"
+          autocomplete="off"
+          placeholder="Type a country name..."
+          class="w-full bg-[#0a0d16] border border-slate-900/80 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-600 font-medium shadow-inner"
+        />
+        
+        <div id="suggestions-menu" class="absolute top-full left-0 right-0 mt-1.5 bg-[#0a0d16] border border-slate-900 rounded-xl overflow-hidden shadow-2xl z-50 hidden max-h-60 overflow-y-auto">
+          </div>
+      </div>
+
+      <button id="btn-all-countries" class="px-5 py-1.5 bg-[#121626] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 rounded-xl text-[11px] font-bold transition-all shadow-md flex items-center gap-1.5">
+        🌍 View Available Countries List
+      </button>
+    </div>
+
+    <div id="game-over-card" class="w-full max-w-md bg-[#0a0d16] border border-slate-900/80 p-6 rounded-2xl text-center flex flex-col items-center gap-4 shadow-2xl hidden animate-fade-in">
+      <span id="game-over-emoji" class="text-5xl animate-bounce">🏆</span>
+      <h3 id="game-over-title" class="text-xl font-black">Splendid Guess!</h3>
+      
+      <div class="flex items-center gap-4 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-900 w-full justify-center">
+        <span id="game-over-flag" class="text-4xl">🇪🇪</span>
+        <div class="text-left">
+          <p class="text-[9px] text-slate-500 font-black uppercase tracking-wider">Target Territory</p>
+          <p id="game-over-country-name" class="text-base font-black text-white">Estonia</p>
+        </div>
+      </div>
+
+      <div class="flex gap-2.5 w-full">
+        <button id="btn-share" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow active:scale-95">
+          📋 Share Grid
+        </button>
+        <button id="btn-next" class="flex-1 py-2.5 px-4 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold rounded-xl transition-all border border-slate-800 hidden active:scale-95">
+          🔄 Play Again
+        </button>
+      </div>
+    </div>
+
+    <div class="w-full overflow-x-auto pb-4">
+      <div class="min-w-[700px] flex flex-col gap-2">
+        <div class="grid grid-cols-6 gap-2 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center py-2 bg-[#0a0d16]/60 rounded-xl px-1 border border-slate-900/50">
+          <div>Flag</div>
+          <div>Continent</div>
+          <div>Hemisphere</div>
+          <div>Population</div>
+          <div>Land Area</div>
+          <div>Lang. Family</div>
+        </div>
+
+        <div id="guesses-grid" class="flex flex-col gap-2">
+          </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="help-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0a0d16] border border-slate-900 max-w-md w-full rounded-2xl p-6 shadow-2xl relative">
+      <button id="btn-close-help" class="absolute top-4 right-4 text-slate-500 hover:text-slate-200 transition-colors font-bold text-xl">&times;</button>
+      <h3 class="text-base font-black text-white mb-3 flex items-center gap-1.5">
+        <span>🌍</span> How to Play
+      </h3>
+      <div class="space-y-3 text-slate-300 text-xs leading-relaxed">
+        <p>1. Press the <strong>Play button</strong> to listen to the mystery anthem. You start with 1 second of audio unlocked.</p>
+        <p>2. Type and pick a country from the auto-suggest search bar.</p>
+        <p>3. Match attributes to narrow down your choices:</p>
+        <ul class="list-disc pl-5 space-y-1 text-slate-400">
+          <li><span class="text-emerald-400 font-bold">Green tile</span> means it matches the target.</li>
+          <li><span class="text-rose-500 font-bold">Red tile</span> means it does not match.</li>
+          <li><span class="text-amber-400 font-bold">🔺 Larger / 🔻 Smaller</span> arrows indicate the target country's population or land area comparison.</li>
+        </ul>
+        <p>4. Each wrong guess unlocks longer intervals of the anthem (up to 30s max!).</p>
+      </div>
+      <button id="btn-close-help-confirm" class="mt-5 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-all">Got it!</button>
+    </div>
+  </div>
+
+  <div id="countries-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0a0d16] border border-slate-900 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      <button id="btn-close-countries" class="absolute top-4 right-4 text-slate-500 hover:text-slate-200 font-bold text-xl">&times;</button>
+      
+      <div class="mb-4">
+        <h3 class="text-base font-black text-white flex items-center gap-1.5">
+          <span>🌍</span> Available World Countries
+        </h3>
+        <p class="text-slate-500 text-[10px] font-semibold">List of active sovereign countries in our roster.</p>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-2 divide-y divide-slate-900/60" id="countries-list-container">
+        </div>
+    </div>
+  </div>
+
+  <footer class="py-4 border-t border-slate-950 text-center text-slate-600 text-[10px] bg-[#05060a]">
+    <p>© 2026 Anthemle Game • Audio streams are self-hosted local MP3 assets.</p>
+  </footer>
+
+  <script>
+    // Comprehensive Global Database with local MP3 naming and granular specific language sub-branches
+    const COUNTRIES = [
+      { name: "Estonia", code: "EE", flag: "🇪🇪", continent: "Europe", hemisphere: "Northern", population: 1330000, area: 45339, langFamily: "Ugric", anthemUrl: "anthemEE.mp3" },
+      { name: "Latvia", code: "LV", flag: "🇱🇻", continent: "Europe", hemisphere: "Northern", population: 1880000, area: 64589, langFamily: "Baltic", anthemUrl: "anthemLV.mp3" },
+      { name: "Lithuania", code: "LT", flag: "🇱🇹", continent: "Europe", hemisphere: "Northern", population: 2830000, area: 65300, langFamily: "Baltic", anthemUrl: "anthemLT.mp3" },
+      { name: "Turkmenistan", code: "TM", flag: "🇹🇲", continent: "Asia", hemisphere: "Northern", population: 6500000, area: 491210, langFamily: "Turkic", anthemUrl: "anthemTM.mp3" },
+      { name: "Kazakhstan", code: "KZ", flag: "🇰🇿", continent: "Asia", hemisphere: "Northern", population: 20000000, area: 2724900, langFamily: "Turkic", anthemUrl: "anthemKZ.mp3" },
+      { name: "Uzbekistan", code: "UZ", flag: "🇺🇿", continent: "Asia", hemisphere: "Northern", population: 36000000, area: 447400, langFamily: "Turkic", anthemUrl: "anthemUZ.mp3" },
+      { name: "Switzerland", code: "CH", flag: "🇨🇭", continent: "Europe", hemisphere: "Northern", population: 8900000, area: 41285, langFamily: "Germanic", anthemUrl: "anthemCH.mp3" },
+      { name: "Kyrgyzstan", code: "KG", flag: "🇰🇬", continent: "Asia", hemisphere: "Northern", population: 7000000, area: 199951, langFamily: "Turkic", anthemUrl: "anthemKG.mp3" },
+      { name: "Tajikistan", code: "TJ", flag: "🇹🇯", continent: "Asia", hemisphere: "Northern", population: 10000000, area: 143100, langFamily: "Iranian", anthemUrl: "anthemTJ.mp3" },
+      { name: "United States", code: "US", flag: "🇺🇸", continent: "Americas", hemisphere: "Northern", population: 341000000, area: 9833517, langFamily: "Germanic", anthemUrl: "anthemUS.mp3" },
+      { name: "United Kingdom", code: "GB", flag: "🇬🇧", continent: "Europe", hemisphere: "Northern", population: 68000000, area: 242495, langFamily: "Germanic", anthemUrl: "anthemGB.mp3" },
+      { name: "Japan", code: "JP", flag: "🇯🇵", continent: "Asia", hemisphere: "Northern", population: 124000000, area: 377975, langFamily: "Japonic", anthemUrl: "anthemJP.mp3" },
+      { name: "France", code: "FR", flag: "🇫🇷", continent: "Europe", hemisphere: "Northern", population: 66000000, area: 643801, langFamily: "Romance", anthemUrl: "anthemFR.mp3" },
+      { name: "Germany", code: "DE", flag: "🇩🇪", continent: "Europe", hemisphere: "Northern", population: 84000000, area: 357022, langFamily: "Germanic", anthemUrl: "anthemDE.mp3" },
+      { name: "Brazil", code: "BR", flag: "🇧🇷", continent: "Americas", hemisphere: "Southern", population: 215000000, area: 8515767, langFamily: "Romance", anthemUrl: "anthemBR.mp3" },
+      { name: "Australia", code: "AU", flag: "🇦🇺", continent: "Oceania", hemisphere: "Southern", population: 26000000, area: 7692024, langFamily: "Germanic", anthemUrl: "anthemAU.mp3" },
+      { name: "India", code: "IN", flag: "🇮🇳", continent: "Asia", hemisphere: "Northern", population: 1440000000, area: 3287263, langFamily: "Indo-Aryan", anthemUrl: "anthemIN.mp3" },
+      { name: "Canada", code: "CA", flag: "🇨🇦", continent: "Americas", hemisphere: "Northern", population: 39000000, area: 9984670, langFamily: "Germanic", anthemUrl: "anthemCA.mp3" },
+      { name: "South Africa", code: "ZA", flag: "🇿🇦", continent: "Africa", hemisphere: "Southern", population: 60000000, area: 1221037, langFamily: "Bantu/Germanic", anthemUrl: "anthemZA.mp3" },
+      { name: "Italy", code: "IT", flag: "🇮🇹", continent: "Europe", hemisphere: "Northern", population: 59000000, area: 301230, langFamily: "Romance", anthemUrl: "anthemIT.mp3" },
+      { name: "Mexico", code: "MX", flag: "🇲🇽", continent: "Americas", hemisphere: "Northern", population: 129000000, area: 1964375, langFamily: "Romance", anthemUrl: "anthemMX.mp3" },
+      { name: "South Korea", code: "KR", flag: "🇰🇷", continent: "Asia", hemisphere: "Northern", population: 51000000, area: 100210, langFamily: "Koreanic", anthemUrl: "anthemKR.mp3" },
+      { name: "Egypt", code: "EG", flag: "🇪🇬", continent: "Africa", hemisphere: "Northern", population: 114000000, area: 1010408, langFamily: "Semitic", anthemUrl: "anthemEG.mp3" },
+      { name: "Argentina", code: "AR", flag: "🇦🇷", continent: "Americas", hemisphere: "Southern", population: 46000000, area: 2780400, langFamily: "Romance", anthemUrl: "anthemAR.mp3" },
+      { name: "China", code: "CN", flag: "🇨🇳", continent: "Asia", hemisphere: "Northern", population: 1411000000, area: 9596961, langFamily: "Sinitic", anthemUrl: "anthemCN.mp3" },
+      { name: "Spain", code: "ES", flag: "🇪🇸", continent: "Europe", hemisphere: "Northern", population: 48000000, area: 505992, langFamily: "Romance", anthemUrl: "anthemES.mp3" },
+      { name: "Nigeria", code: "NG", flag: "🇳🇬", continent: "Africa", hemisphere: "Northern", population: 224000000, area: 923768, langFamily: "Benue", anthemUrl: "anthemNG.mp3" },
+      { name: "Turkey", code: "TR", flag: "🇹🇷", continent: "Europe/Asia", hemisphere: "Northern", population: 85000000, area: 783562, langFamily: "Turkic", anthemUrl: "anthemTR.mp3" },
+      { name: "Greece", code: "GR", flag: "🇬🇷", continent: "Europe", hemisphere: "Northern", population: 10400000, area: 131957, langFamily: "Hellenic", anthemUrl: "anthemGR.mp3" },
+      { name: "Sweden", code: "SE", flag: "🇸🇪", continent: "Europe", hemisphere: "Northern", population: 10500000, area: 450295, langFamily: "Germanic", anthemUrl: "anthemSE.mp3" },
+      { name: "Poland", code: "PL", flag: "🇵🇱", continent: "Europe", hemisphere: "Northern", population: 37000000, area: 312696, langFamily: "Slavic", anthemUrl: "anthemPL.mp3" },
+      { name: "Finland", code: "FI", flag: "🇫🇮", continent: "Europe", hemisphere: "Northern", population: 5600000, area: 338424, langFamily: "Finno-Ugric", anthemUrl: "anthemFI.mp3" },
+      { name: "Norway", code: "NO", flag: "🇳🇴", continent: "Europe", hemisphere: "Northern", population: 5500000, area: 385207, langFamily: "Germanic", anthemUrl: "anthemNO.mp3" },
+      { name: "Denmark", code: "DK", flag: "🇩🇰", continent: "Europe", hemisphere: "Northern", population: 5900000, area: 43094, langFamily: "Germanic", anthemUrl: "anthemDK.mp3" },
+      { name: "Belgium", code: "BE", flag: "🇧🇪", continent: "Europe", hemisphere: "Northern", population: 11700000, area: 30528, langFamily: "Germanic", anthemUrl: "anthemBE.mp3" },
+      { name: "Netherlands", code: "NL", flag: "🇳🇱", continent: "Europe", hemisphere: "Northern", population: 17800000, area: 41850, langFamily: "Germanic", anthemUrl: "anthemNL.mp3" },
+      { name: "Austria", code: "AT", flag: "🇦🇹", continent: "Europe", hemisphere: "Northern", population: 9000000, area: 83871, langFamily: "Germanic", anthemUrl: "anthemAT.mp3" },
+      { name: "Czechia", code: "CZ", flag: "🇨🇿", continent: "Europe", hemisphere: "Northern", population: 10500000, area: 78867, langFamily: "Slavic", anthemUrl: "anthemCZ.mp3" },
+      { name: "Hungary", code: "HU", flag: "🇭🇺", continent: "Europe", hemisphere: "Northern", population: 9600000, area: 93030, langFamily: "Ugric", anthemUrl: "anthemHU.mp3" },
+      { name: "Slovakia", code: "SK", flag: "🇸🇰", continent: "Europe", hemisphere: "Northern", population: 5400000, area: 49035, langFamily: "Slavic", anthemUrl: "anthemSK.mp3" },
+      { name: "Romania", code: "RO", flag: "🇷🇴", continent: "Europe", hemisphere: "Northern", population: 19000000, area: 238397, langFamily: "Romance", anthemUrl: "https://tsmarty.xyz/anthemle/anthemRO.mp3" },
+      { name: "Ukraine", code: "UA", flag: "🇺🇦", continent: "Europe", hemisphere: "Northern", population: 38000000, area: 603500, langFamily: "Slavic", anthemUrl: "anthemUA.mp3" },
+      { name: "Ireland", code: "IE", flag: "🇮🇪", continent: "Europe", hemisphere: "Northern", population: 5100000, area: 70273, langFamily: "Germanic", anthemUrl: "anthemIE.mp3" },
+      { name: "Portugal", code: "PT", flag: "🇵🇹", continent: "Europe", hemisphere: "Northern", population: 10400000, area: 92212, langFamily: "Romance", anthemUrl: "anthemPT.mp3" },
+      { name: "Saudi Arabia", code: "SA", flag: "🇸🇦", continent: "Asia", hemisphere: "Northern", population: 36000000, area: 2149690, langFamily: "Semitic", anthemUrl: "anthemSA.mp3" },
+      { name: "Israel", code: "IL", flag: "🇮🇱", continent: "Asia", hemisphere: "Northern", population: 9800000, area: 20770, langFamily: "Semitic", anthemUrl: "anthemIL.mp3" },
+      { name: "Iraq", code: "IQ", flag: "🇮🇶", continent: "Asia", hemisphere: "Northern", population: 45000000, area: 438317, langFamily: "Semitic", anthemUrl: "anthemIQ.mp3" },
+      { name: "Iran", code: "IR", flag: "🇮🇷", continent: "Asia", hemisphere: "Northern", population: 89000000, area: 1648195, langFamily: "Iranian", anthemUrl: "anthemIR.mp3" },
+      { name: "Thailand", code: "TH", flag: "🇹🇭", continent: "Asia", hemisphere: "Northern", population: 71000000, area: 513120, langFamily: "Kra-Dai", anthemUrl: "anthemTH.mp3" },
+      { name: "Pakistan", code: "PK", flag: "🇵🇰", continent: "Asia", hemisphere: "Northern", population: 240000000, area: 796095, langFamily: "Indo-Aryan", anthemUrl: "anthemPK.mp3" },
+      { name: "Vietnam", code: "VN", flag: "🇻🇳", continent: "Asia", hemisphere: "Northern", population: 98000000, area: 331210, langFamily: "Vietic", anthemUrl: "anthemVN.mp3" },
+      { name: "Singapore", code: "SG", flag: "🇸🇬", continent: "Asia", hemisphere: "Northern", population: 6000000, area: 728, langFamily: "Polynesian", anthemUrl: "anthemSG.mp3" },
+      { name: "Malaysia", code: "MY", flag: "🇲🇾", continent: "Asia", hemisphere: "Northern", population: 34000000, area: 330803, langFamily: "Polynesian", anthemUrl: "anthemMY.mp3" },
+      { name: "Indonesia", code: "ID", flag: "🇮🇩", continent: "Asia", hemisphere: "Southern", population: 277000000, area: 1904569, langFamily: "Polynesian", anthemUrl: "anthemID.mp3" },
+      { name: "Philippines", code: "PH", flag: "🇵🇭", continent: "Asia", hemisphere: "Northern", population: 115000000, area: 300000, langFamily: "Polynesian", anthemUrl: "anthemPH.mp3" }
+    ];
+
+    const TIME_LIMITS = [2, 3, 5, 10, 15, 30, 40, 60, 80, 100];
+    const MAX_GUESSES = 10;
+
+    // Game Core State Variables
+    let gameMode = "classic"; // "classic" or "unlimited"
+    let targetCountry = null;
+    let guesses = [];
+    let isPlaying = false;
+    let streak = 0;
+
+    // Media Element Pointer
+    const audio = document.getElementById("anthem-media-element");
+
+    // UI Pointers
+    const streakCounter = document.getElementById("streak-counter");
+    const streakBannerVal = document.getElementById("streak-banner-val");
+    const btnHelp = document.getElementById("btn-help");
+    const btnHowToPlay = document.getElementById("btn-how-to-play");
+    const tabClassic = document.getElementById("tab-classic");
+    const tabUnlimited = document.getElementById("tab-unlimited");
+    const btnPlay = document.getElementById("btn-play");
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const playIcon = document.getElementById("play-icon");
+    const pauseIcon = document.getElementById("pause-icon");
+    const currentTimeLbl = document.getElementById("current-time-lbl");
+    const maxTimeLbl = document.getElementById("max-time-lbl");
+    const audioProgress = document.getElementById("audio-progress");
+    const guessCounter = document.getElementById("guess-counter");
+    const limitBadge = document.getElementById("limit-badge");
+    const countryInput = document.getElementById("country-input");
+    const suggestionsMenu = document.getElementById("suggestions-menu");
+    const inputContainer = document.getElementById("input-container");
+    const btnAllCountries = document.getElementById("btn-all-countries");
+    const btnAudioTroubleshoot = document.getElementById("btn-audio-troubleshoot");
+    const btnAudioDirectPlay = document.getElementById("btn-audio-direct-play");
+    const gameOverCard = document.getElementById("game-over-card");
+    const gameOverEmoji = document.getElementById("game-over-emoji");
+    const gameOverTitle = document.getElementById("game-over-title");
+    const gameOverFlag = document.getElementById("game-over-flag");
+    const gameOverCountryName = document.getElementById("game-over-country-name");
+    const btnShare = document.getElementById("btn-share");
+    const btnNext = document.getElementById("btn-next");
+    const guessesGrid = document.getElementById("guesses-grid");
+    const helpModal = document.getElementById("help-modal");
+    const btnCloseHelp = document.getElementById("btn-close-help");
+    const btnCloseHelpConfirm = document.getElementById("btn-close-help-confirm");
+    const countriesModal = document.getElementById("countries-modal");
+    const btnCloseCountries = document.getElementById("btn-close-countries");
+    const countriesListContainer = document.getElementById("countries-list-container");
+    const toastContainer = document.getElementById("toast-container");
+    const audioStatusMsg = document.getElementById("audio-status-msg");
+
+    // Start App Setup
+    window.addEventListener("DOMContentLoaded", () => {
+      // Load streak progress
+      const savedStreak = localStorage.getItem("anthemle_streak_val_v4");
+      if (savedStreak) {
+        streak = parseInt(savedStreak, 10);
+        streakCounter.textContent = streak;
+        streakBannerVal.textContent = streak;
+      }
+
+      setupAudioEngine();
+      setupGame();
+      registerEvents();
+      buildCountriesList();
+    });
+
+    // Custom non-blocking Toast messages
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "bg-indigo-600/95 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-2xl border border-indigo-400/30 animate-bounce flex items-center gap-2 pointer-events-auto backdrop-blur-sm";
+      toast.innerHTML = `<span>⚡</span> <span>${message}</span>`;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3500);
+    }
+
+    // Audio Engine Configuration
+    function setupAudioEngine() {
+      audio.preload = "auto";
+      
+      audio.addEventListener("waiting", () => {
+        loadingSpinner.classList.remove("hidden");
+        playIcon.classList.add("hidden");
+        pauseIcon.classList.add("hidden");
+        audioStatusMsg.textContent = "Loading audio stream...";
+      });
+
+      audio.addEventListener("playing", () => {
+        loadingSpinner.classList.add("hidden");
+        if (isPlaying) {
+          pauseIcon.classList.remove("hidden");
+          playIcon.classList.add("hidden");
+        }
+        audioStatusMsg.textContent = "Playing melody...";
+      });
+
+      audio.addEventListener("timeupdate", () => {
+        const currentLimit = TIME_LIMITS[Math.min(guesses.length, TIME_LIMITS.length - 1)];
+        const currentPlayTime = audio.currentTime;
+
+        // Sync visualization progress
+        currentTimeLbl.textContent = `0:${currentPlayTime < 10 ? '0' + Math.floor(currentPlayTime) : Math.floor(currentPlayTime)}`;
+        const percent = Math.min((currentPlayTime / currentLimit) * 100, 100);
+        audioProgress.style.width = `${percent}%`;
+
+        // Hard duration clamp
+        if (currentPlayTime >= currentLimit) {
+          stopAudioPlayback();
+        }
+      });
+
+      audio.addEventListener("ended", () => {
+        stopAudioPlayback();
+      });
+
+      audio.addEventListener("error", (e) => {
+        console.error("Audio Load Event Failure Code:", e);
+        loadingSpinner.classList.add("hidden");
+        playIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
+        audioStatusMsg.textContent = "Playback paused. Tap play again.";
+      });
+    }
+
+    // Explicit User Trigger Event Handler for strictly sandboxed environments
+    function toggleAudioPlayback() {
+      if (!targetCountry || !targetCountry.anthemUrl) {
+        showToast("Audio stream source not initialized!");
+        return;
+      }
+
+      if (isPlaying) {
+        stopAudioPlayback();
+      } else {
+        audio.currentTime = 0;
+        audioProgress.style.width = "0%";
+        loadingSpinner.classList.remove("hidden");
+        playIcon.classList.add("hidden");
+
+        // IMPORTANT FIX: Re-write the src directly inside the click event to preserve browser authorization
+        audio.src = targetCountry.anthemUrl;
+        audio.load();
+
+        const startPromise = audio.play();
+        if (startPromise !== undefined) {
+          startPromise.then(() => {
+            isPlaying = true;
+            loadingSpinner.classList.add("hidden");
+            pauseIcon.classList.remove("hidden");
+            playIcon.classList.add("hidden");
+            audioStatusMsg.textContent = "Playing melody...";
+          }).catch(err => {
+            console.warn("User action required:", err);
+            loadingSpinner.classList.add("hidden");
+            playIcon.classList.remove("hidden");
+            showToast("Click Play button once more to authorize audio.");
+          });
+        }
+      }
+    }
+
+    // Fast direct play fallback for rigid devices
+    function playDirectFallback() {
+      if (targetCountry && targetCountry.anthemUrl) {
+        const tempAudio = new Audio(targetCountry.anthemUrl);
+        tempAudio.play().then(() => {
+          showToast("Fallback stream initialized!");
+          setTimeout(() => { tempAudio.pause(); }, 5000); // safety cap
+        }).catch(() => {
+          openDirectAudio();
+        });
+      }
+    }
+
+    function stopAudioPlayback() {
+      audio.pause();
+      audio.currentTime = 0;
+      isPlaying = false;
+      playIcon.classList.remove("hidden");
+      pauseIcon.classList.add("hidden");
+      loadingSpinner.classList.add("hidden");
+      audioProgress.style.width = "0%";
+      currentTimeLbl.textContent = "0:00";
+      audioStatusMsg.textContent = "Press play to listen.";
+    }
+
+    // Direct troubleshooting link logic
+    function openDirectAudio() {
+      if (targetCountry && targetCountry.anthemUrl) {
+        window.open(targetCountry.anthemUrl, '_blank');
+      }
+    }
+
+    // Interactive Game Mechanics
+    function setupGame() {
+      stopAudioPlayback();
+      guesses = [];
+      countryInput.value = "";
+      guessesGrid.innerHTML = "";
+      inputContainer.classList.remove("hidden");
+      gameOverCard.classList.add("hidden");
+
+      if (gameMode === "classic") {
+        const today = new Date();
+        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        const index = seed % COUNTRIES.length;
+        targetCountry = COUNTRIES[index];
+        btnNext.classList.add("hidden");
+      } else {
+        const randomIndex = Math.floor(Math.random() * COUNTRIES.length);
+        targetCountry = COUNTRIES[randomIndex];
+        btnNext.classList.remove("hidden");
+      }
+
+      // Pre-load the track
+      audio.removeAttribute("crossorigin");
+      audio.src = targetCountry.anthemUrl;
+      audio.load();
+
+      updateGameDashboard();
+    }
+
+    function updateGameDashboard() {
+      const secondsAllowed = TIME_LIMITS[Math.min(guesses.length, TIME_LIMITS.length - 1)];
+      guessCounter.textContent = `Attempt ${guesses.length + 1} / ${MAX_GUESSES}`;
+      limitBadge.textContent = `Limit: ${secondsAllowed}s`;
+      maxTimeLbl.textContent = `0:${secondsAllowed < 10 ? '0' + secondsAllowed : secondsAllowed}`;
+    }
+
+    // Number Formatters
+    function formatPopulation(num) {
+      if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
+      if (num >= 1e6) return `${(num / 1e6).toFixed(0)}M`;
+      return num.toLocaleString();
+    }
+
+    function formatArea(num) {
+      if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M km²`;
+      return `${(num / 1000).toFixed(0)}K km²`;
+    }
+
+    // Generate Suggestions List
+    function updateSuggestions() {
+      const query = countryInput.value.trim().toLowerCase();
+      if (!query) {
+        suggestionsMenu.classList.add("hidden");
+        return;
+      }
+
+      const matching = COUNTRIES.filter(c => 
+        c.name.toLowerCase().includes(query) && 
+        !guesses.some(g => g.name === c.name)
+      ).slice(0, 5);
+
+      if (matching.length === 0) {
+        suggestionsMenu.classList.add("hidden");
+        return;
+      }
+
+      suggestionsMenu.innerHTML = "";
+      matching.forEach(c => {
+        const item = document.createElement("button");
+        item.className = "w-full text-left px-4 py-3 hover:bg-slate-900 flex items-center gap-3 text-xs text-slate-200 transition-all border-b border-slate-950 last:border-0";
+        item.innerHTML = `
+          <span class="text-lg">${c.flag}</span>
+          <span class="font-bold">${c.name}</span>
+        `;
+        item.addEventListener("click", () => {
+          submitGuess(c);
+        });
+        suggestionsMenu.appendChild(item);
+      });
+
+      suggestionsMenu.classList.remove("hidden");
+    }
+
+    // Handle Guess Submissions
+    function submitGuess(country) {
+      guesses.push(country);
+      countryInput.value = "";
+      suggestionsMenu.classList.add("hidden");
+      stopAudioPlayback();
+
+      renderGuessesGrid();
+      updateGameDashboard();
+
+      if (country.name === targetCountry.name) {
+        finishGame(true);
+      } else if (guesses.length >= MAX_GUESSES) {
+        finishGame(false);
+      } else {
+        showToast("Incorrect country! Clues updated.");
+      }
+    }
+
+    // Render Matrix Feedback Grid
+    function renderGuessesGrid() {
+      guessesGrid.innerHTML = "";
+      guesses.forEach(g => {
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-6 gap-2 text-center text-xs font-bold animate-fade-in";
+
+        const isContMatch = g.continent === targetCountry.continent;
+        const isHemiMatch = g.hemisphere === targetCountry.hemisphere;
+        const isLangMatch = g.langFamily === targetCountry.langFamily;
+
+        row.innerHTML = `
+          <div class="bg-[#0e1222] border border-slate-900 p-2 rounded-xl flex flex-col items-center justify-center gap-0.5 min-h-[65px]">
+            <span class="text-xl">${g.flag}</span>
+            <span class="text-[9px] truncate max-w-full text-slate-400 font-semibold">${g.name}</span>
+          </div>
+
+          <div class="p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 ${
+            isContMatch 
+              ? "bg-[#00a86b]/15 border-[#00a86b]/40 text-[#00c87b]" 
+              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+          }">
+            <span class="text-xs">🌍</span>
+            <span class="truncate max-w-full text-[10px] font-black">${g.continent}</span>
+          </div>
+
+          <div class="p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 ${
+            isHemiMatch 
+              ? "bg-[#00a86b]/15 border-[#00a86b]/40 text-[#00c87b]" 
+              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+          }">
+            <span class="text-xs">🌐</span>
+            <span class="truncate max-w-full text-[10px] font-black">${g.hemisphere}</span>
+          </div>
+
+          <div class="p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 ${
+            g.population === targetCountry.population 
+              ? "bg-[#00a86b]/15 border-[#00a86b]/40 text-[#00c87b]" 
+              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+          }">
+            <span class="text-[9px] font-extrabold uppercase">
+              ${g.population === targetCountry.population 
+                ? "✅" 
+                : g.population < targetCountry.population ? "🔺 Higher" : "🔻 Lower"}
+            </span>
+            <span class="text-[10px] font-black">${formatPopulation(g.population)}</span>
+          </div>
+
+          <div class="p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 ${
+            g.area === targetCountry.area 
+              ? "bg-[#00a86b]/15 border-[#00a86b]/40 text-[#00c87b]" 
+              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+          }">
+            <span class="text-[9px] font-extrabold uppercase">
+              ${g.area === targetCountry.area 
+                ? "✅" 
+                : g.area < targetCountry.area ? "🔺 Higher" : "🔻 Lower"}
+            </span>
+            <span class="text-[10px] font-black truncate max-w-full">${formatArea(g.area)}</span>
+          </div>
+
+          <div class="p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 ${
+            isLangMatch 
+              ? "bg-[#00a86b]/15 border-[#00a86b]/40 text-[#00c87b]" 
+              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+          }">
+            <span class="text-xs">🗣️</span>
+            <span class="truncate max-w-full text-[9px] font-black">${g.langFamily}</span>
+          </div>
+        `;
+        guessesGrid.appendChild(row);
+      });
+    }
+
+    // End Game Screen Handler
+    function finishGame(won) {
+      inputContainer.classList.add("hidden");
+      gameOverCard.classList.remove("hidden");
+
+      if (won) {
+        gameOverEmoji.textContent = "🏆";
+        gameOverTitle.textContent = "Victory! Anthem Identified!";
+        streak++;
+        showToast("Correct! Streak increased!");
+      } else {
+        gameOverEmoji.textContent = "😢";
+        gameOverTitle.textContent = "Out of Retries!";
+        streak = 0;
+        showToast(`Target was: ${targetCountry.name}`);
+      }
+
+      localStorage.setItem("anthemle_streak_val_v4", streak);
+      streakCounter.textContent = streak;
+      streakBannerVal.textContent = streak;
+
+      gameOverFlag.textContent = targetCountry.flag;
+      gameOverCountryName.textContent = targetCountry.name;
+    }
+
+    // Clipboard emoji summary builder
+    function shareGridResults() {
+      let gridText = `🎵 Anthemle (${gameMode}) - ${guesses.length}/${MAX_GUESSES}\n`;
+      guesses.forEach(g => {
+        const cMatch = g.continent === targetCountry.continent ? "🟩" : "whitespace-normal 🟥";
+        const hMatch = g.hemisphere === targetCountry.hemisphere ? "🟩" : "🟥";
+        
+        let pMatch = "🟥";
+        if (g.population === targetCountry.population) pMatch = "🟩";
+        else pMatch = g.population < targetCountry.population ? "🔺" : "🔻";
+
+        let aMatch = "🟥";
+        if (g.area === targetCountry.area) aMatch = "🟩";
+        else aMatch = g.area < targetCountry.area ? "🔺" : "🔻";
+
+        const lMatch = g.langFamily === targetCountry.langFamily ? "🟩" : "🟥";
+
+        gridText += `${cMatch}${hMatch}${pMatch}${aMatch}${lMatch}\n`;
+      });
+      gridText += "Play now at tsmarty.xyz/anthemle";
+
+      const tempArea = document.createElement("textarea");
+      tempArea.value = gridText;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      try {
+        document.execCommand('copy');
+        showToast("📋 Copied grid share code to clipboard!");
+      } catch (err) {
+        showToast("Clipboard write permission blocked.");
+      }
+      document.body.removeChild(tempArea);
+    }
+
+    // Build the Country List inside the Directory Modal
+    function buildCountriesList() {
+      countriesListContainer.innerHTML = "";
+      const sorted = [...COUNTRIES].sort((a, b) => a.name.localeCompare(b.name));
+      
+      sorted.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between py-2.5 text-xs text-slate-300";
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">${c.flag}</span>
+            <span class="font-bold text-white">${c.name}</span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-slate-500 font-semibold">
+            <span>${c.langFamily}</span>
+            <span>•</span>
+            <span>${formatPopulation(c.population)}</span>
+          </div>
+        `;
+        countriesListContainer.appendChild(item);
+      });
+    }
+
+    // Attach Event Listeners
+    function registerEvents() {
+      // Pill Tabs toggle
+      tabClassic.addEventListener("click", () => {
+        if (gameMode === "classic") return;
+        gameMode = "classic";
+        tabClassic.className = "flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all bg-indigo-600 text-white shadow";
+        tabUnlimited.className = "flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+        setupGame();
+      });
+
+      tabUnlimited.addEventListener("click", () => {
+        if (gameMode === "unlimited") return;
+        gameMode = "unlimited";
+        tabUnlimited.className = "flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all bg-indigo-600 text-white shadow";
+        tabClassic.className = "flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+        setupGame();
+      });
+
+      // Play click trigger
+      btnPlay.addEventListener("click", toggleAudioPlayback);
+
+      // Troubleshooter manual open
+      btnAudioTroubleshoot.addEventListener("click", openDirectAudio);
+      btnAudioDirectPlay.addEventListener("click", playDirectFallback);
+
+      // Autocomplete actions
+      countryInput.addEventListener("input", updateSuggestions);
+      countryInput.addEventListener("focus", updateSuggestions);
+
+      // Dismiss menu when user taps elsewhere
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input-container")) {
+          suggestionsMenu.classList.add("hidden");
+        }
+      });
+
+      // Show/Hide Help Modals
+      btnHelp.addEventListener("click", () => helpModal.classList.remove("hidden"));
+      btnHowToPlay.addEventListener("click", () => helpModal.classList.remove("hidden"));
+      btnCloseHelp.addEventListener("click", () => helpModal.classList.add("hidden"));
+      btnCloseHelpConfirm.addEventListener("click", () => helpModal.classList.add("hidden"));
+
+      // Show/Hide Countries directory roster
+      btnAllCountries.addEventListener("click", () => countriesModal.classList.remove("hidden"));
+      btnCloseCountries.addEventListener("click", () => countriesModal.classList.add("hidden"));
+
+      // Secondary game finish action handlers
+      btnShare.addEventListener("click", shareGridResults);
+      btnNext.addEventListener("click", setupGame);
+    }
+  </script>
+</body>
+</html>
