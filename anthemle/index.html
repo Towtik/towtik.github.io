@@ -40,10 +40,13 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-indigo-500 selection:text-white">
 
+  <!-- HTML5 Native Audio Element -->
   <audio id="anthem-media-element" preload="auto" class="hidden"></audio>
 
+  <!-- Toast Notification Bar -->
   <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+  <!-- Header Panel -->
   <header class="border-b border-slate-900/60 bg-[#0a0d16]/95 sticky top-0 z-45 px-4 py-3.5 backdrop-blur-md">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -70,6 +73,7 @@
     </div>
   </header>
 
+  <!-- Navigation Mode Pill Toggles -->
   <div class="max-w-4xl mx-auto w-full px-4 pt-6">
     <div class="flex items-center justify-center gap-1.5 bg-[#0a0d16] p-1 rounded-full border border-slate-900/80 max-w-sm mx-auto shadow-xl">
       <button id="tab-classic" class="flex-1 py-2 px-4 rounded-full text-xs font-bold transition-all bg-indigo-600 text-white shadow">
@@ -81,11 +85,14 @@
     </div>
   </div>
 
+  <!-- Main Area -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col items-center gap-5 justify-start">
 
+    <!-- Premium Banner Card -->
     <div class="w-full text-center py-6 px-4 bg-[#0a0d16] rounded-2xl border border-slate-900/80 shadow-2xl relative overflow-hidden glow-card">
       <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
       
+      <!-- Globe Icon -->
       <div class="w-10 h-10 bg-indigo-600/15 rounded-full flex items-center justify-center mx-auto mb-2 border border-indigo-500/20">
         <span class="text-xl">🎵</span>
       </div>
@@ -97,11 +104,13 @@
         Listen to the melody and reveal clues with every guess! <span class="text-indigo-400 font-bold">🔥 Streak <span id="streak-banner-val">0</span></span>
       </p>
 
+      <!-- How to Play Inline Indicator -->
       <button id="btn-how-to-play" class="mt-4 px-4 py-1.5 rounded-lg border border-cyan-500/30 text-cyan-400 text-xs font-bold hover:bg-cyan-500/5 transition-all inline-flex items-center gap-1">
         <span>ℹ️</span> How to Play
       </button>
     </div>
 
+    <!-- Audio controller box with buffering indicators -->
     <div class="w-full max-w-md bg-[#0a0d16] border border-slate-900/80 p-5 rounded-2xl shadow-xl flex flex-col items-center gap-4">
       <div class="flex items-center justify-between w-full">
         <span id="guess-counter" class="text-xs text-slate-500 font-bold uppercase tracking-wider">
@@ -112,15 +121,19 @@
         </span>
       </div>
 
+      <!-- Play Button & Interactive Audio Equalizer Waveform -->
       <div class="flex items-center gap-4 w-full">
         <button id="btn-play" class="w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all shadow-lg active:scale-95 disabled:opacity-50">
+          <!-- Loading Spinner -->
           <svg id="loading-spinner" class="w-6 h-6 animate-spin text-white hidden" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
+          <!-- Play Icon SVG -->
           <svg id="play-icon" class="w-6 h-6 fill-current ml-1" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
+          <!-- Pause Icon SVG -->
           <svg id="pause-icon" class="w-6 h-6 fill-current hidden" viewBox="0 0 24 24">
             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
           </svg>
@@ -129,7 +142,7 @@
         <div class="flex-1">
           <div class="flex justify-between text-[10px] text-slate-500 font-mono mb-1">
             <span id="current-time-lbl">0:00</span>
-            <span id="max-time-lbl">0:02</span>
+            <span id="max-time-lbl">0:01</span>
           </div>
           <div class="h-2 bg-slate-950 rounded-full overflow-hidden relative border border-slate-900">
             <div id="audio-progress" class="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-indigo-500 to-rose-500 transition-all duration-100" style="width: 0%"></div>
@@ -138,33 +151,11 @@
       </div>
 
       <div id="audio-status-msg" class="text-[10px] text-slate-500 text-center font-medium">
-        Press play to listen. Incorrect guesses unlock up to 100 seconds!
+        Press play to listen. Incorrect guesses unlock up to 30 seconds!
       </div>
-
-      <div class="w-full text-center flex flex-col gap-1 mt-2 border-t border-slate-900/60 pt-3">
-
-        <p class="text-[9px] text-slate-500 font-semibold">Audio troubleshooting tools</p>
-
-        <div class="flex gap-2 justify-center">
-
-          <button id="btn-audio-troubleshoot" disabled class="text-[10px] bg-slate-900 hover:bg-slate-800 text-indigo-400 px-3 py-1 rounded-md border border-slate-800 transition-colors">
-
-            🔗 UNAVAILABLE
-
-          </button>
-
-          <button id="btn-audio-direct-play" class="text-[10px] bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 px-3 py-1 rounded-md border border-indigo-900/50 transition-colors">
-
-            ⚡ Direct Play Trigger
-
-          </button>
-
-        </div>
-
-      </div>
-
     </div>
 
+    <!-- Country Autocomplete & Submission Input -->
     <div id="input-container" class="w-full max-w-md relative z-30 flex flex-col items-center gap-3">
       <div class="relative w-full">
         <input
@@ -175,15 +166,19 @@
           class="w-full bg-[#0a0d16] border border-slate-900/80 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-600 font-medium shadow-inner"
         />
         
+        <!-- Dropdown Suggestions Menu -->
         <div id="suggestions-menu" class="absolute top-full left-0 right-0 mt-1.5 bg-[#0a0d16] border border-slate-900 rounded-xl overflow-hidden shadow-2xl z-50 hidden max-h-60 overflow-y-auto">
-          </div>
+          <!-- Suggestions are loaded here -->
+        </div>
       </div>
 
+      <!-- View Country List Button -->
       <button id="btn-all-countries" class="px-5 py-1.5 bg-[#121626] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 rounded-xl text-[11px] font-bold transition-all shadow-md flex items-center gap-1.5">
         🌍 View Available Countries List
       </button>
     </div>
 
+    <!-- Game Finish Display -->
     <div id="game-over-card" class="w-full max-w-md bg-[#0a0d16] border border-slate-900/80 p-6 rounded-2xl text-center flex flex-col items-center gap-4 shadow-2xl hidden animate-fade-in">
       <span id="game-over-emoji" class="text-5xl animate-bounce">🏆</span>
       <h3 id="game-over-title" class="text-xl font-black">Splendid Guess!</h3>
@@ -201,11 +196,12 @@
           📋 Share Grid
         </button>
         <button id="btn-next" class="flex-1 py-2.5 px-4 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold rounded-xl transition-all border border-slate-800 hidden active:scale-95">
-          🔄 Play Again
+          🔄 Play Unlimited Mode
         </button>
       </div>
     </div>
 
+    <!-- Guess Comparison Feedback Grid -->
     <div class="w-full overflow-x-auto pb-4">
       <div class="min-w-[700px] flex flex-col gap-2">
         <div class="grid grid-cols-6 gap-2 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center py-2 bg-[#0a0d16]/60 rounded-xl px-1 border border-slate-900/50">
@@ -217,13 +213,16 @@
           <div>Lang. Family</div>
         </div>
 
+        <!-- Feedback Rows Container -->
         <div id="guesses-grid" class="flex flex-col gap-2">
-          </div>
+          <!-- Dynamic row boxes appear here -->
+        </div>
       </div>
     </div>
 
   </main>
 
+  <!-- help modal window -->
   <div id="help-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#0a0d16] border border-slate-900 max-w-md w-full rounded-2xl p-6 shadow-2xl relative">
       <button id="btn-close-help" class="absolute top-4 right-4 text-slate-500 hover:text-slate-200 transition-colors font-bold text-xl">&times;</button>
@@ -245,6 +244,7 @@
     </div>
   </div>
 
+  <!-- Available Countries List Modal -->
   <div id="countries-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#0a0d16] border border-slate-900 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
       <button id="btn-close-countries" class="absolute top-4 right-4 text-slate-500 hover:text-slate-200 font-bold text-xl">&times;</button>
@@ -257,24 +257,25 @@
       </div>
 
       <div class="flex-1 overflow-y-auto pr-2 divide-y divide-slate-900/60" id="countries-list-container">
-        </div>
+        <!-- Programmatic country rows -->
+      </div>
     </div>
   </div>
 
   <footer class="py-4 border-t border-slate-950 text-center text-slate-600 text-[10px] bg-[#05060a]">
-    <p>© 2026 Anthemle Game • Audio streams are self-hosted local MP3 assets.</p>
+    <p>© 2026 tsmarty.xyz/anthemle • Audio streams are self-hosted local MP3 assets.</p>
   </footer>
 
   <script>
     // Comprehensive Global Database with local MP3 naming and granular specific language sub-branches
     const COUNTRIES = [
-      { name: "Estonia", code: "EE", flag: "🇪🇪", continent: "Europe", hemisphere: "Northern", population: 1330000, area: 45339, langFamily: "Ugric", anthemUrl: "anthemEE.mp3" },
+      { name: "Estonia", code: "EE", flag: "🇪🇪", continent: "Europe", hemisphere: "Northern", population: 1330000, area: 45339, langFamily: "Finno-Ugric", anthemUrl: "anthemEE.mp3" },
       { name: "Latvia", code: "LV", flag: "🇱🇻", continent: "Europe", hemisphere: "Northern", population: 1880000, area: 64589, langFamily: "Baltic", anthemUrl: "anthemLV.mp3" },
       { name: "Lithuania", code: "LT", flag: "🇱🇹", continent: "Europe", hemisphere: "Northern", population: 2830000, area: 65300, langFamily: "Baltic", anthemUrl: "anthemLT.mp3" },
       { name: "Turkmenistan", code: "TM", flag: "🇹🇲", continent: "Asia", hemisphere: "Northern", population: 6500000, area: 491210, langFamily: "Turkic", anthemUrl: "anthemTM.mp3" },
       { name: "Kazakhstan", code: "KZ", flag: "🇰🇿", continent: "Asia", hemisphere: "Northern", population: 20000000, area: 2724900, langFamily: "Turkic", anthemUrl: "anthemKZ.mp3" },
       { name: "Uzbekistan", code: "UZ", flag: "🇺🇿", continent: "Asia", hemisphere: "Northern", population: 36000000, area: 447400, langFamily: "Turkic", anthemUrl: "anthemUZ.mp3" },
-      { name: "Switzerland", code: "CH", flag: "🇨🇭", continent: "Europe", hemisphere: "Northern", population: 8900000, area: 41285, langFamily: "Germanic", anthemUrl: "anthemCH.mp3" },
+      { name: "Switzerland", code: "CH", flag: "🇨🇭", continent: "Europe", hemisphere: "Northern", population: 8900000, area: 41285, langFamily: "Germanic/Romance", anthemUrl: "anthemCH.mp3" },
       { name: "Kyrgyzstan", code: "KG", flag: "🇰🇬", continent: "Asia", hemisphere: "Northern", population: 7000000, area: 199951, langFamily: "Turkic", anthemUrl: "anthemKG.mp3" },
       { name: "Tajikistan", code: "TJ", flag: "🇹🇯", continent: "Asia", hemisphere: "Northern", population: 10000000, area: 143100, langFamily: "Iranian", anthemUrl: "anthemTJ.mp3" },
       { name: "United States", code: "US", flag: "🇺🇸", continent: "Americas", hemisphere: "Northern", population: 341000000, area: 9833517, langFamily: "Germanic", anthemUrl: "anthemUS.mp3" },
@@ -284,8 +285,8 @@
       { name: "Germany", code: "DE", flag: "🇩🇪", continent: "Europe", hemisphere: "Northern", population: 84000000, area: 357022, langFamily: "Germanic", anthemUrl: "anthemDE.mp3" },
       { name: "Brazil", code: "BR", flag: "🇧🇷", continent: "Americas", hemisphere: "Southern", population: 215000000, area: 8515767, langFamily: "Romance", anthemUrl: "anthemBR.mp3" },
       { name: "Australia", code: "AU", flag: "🇦🇺", continent: "Oceania", hemisphere: "Southern", population: 26000000, area: 7692024, langFamily: "Germanic", anthemUrl: "anthemAU.mp3" },
-      { name: "India", code: "IN", flag: "🇮🇳", continent: "Asia", hemisphere: "Northern", population: 1440000000, area: 3287263, langFamily: "Indo-Aryan", anthemUrl: "anthemIN.mp3" },
-      { name: "Canada", code: "CA", flag: "🇨🇦", continent: "Americas", hemisphere: "Northern", population: 39000000, area: 9984670, langFamily: "Germanic", anthemUrl: "anthemCA.mp3" },
+      { name: "India", code: "IN", flag: "🇮🇳", continent: "Asia", hemisphere: "Northern", population: 1440000000, area: 3287263, langFamily: "Indo-Aryan/Dravidian", anthemUrl: "anthemIN.mp3" },
+      { name: "Canada", code: "CA", flag: "🇨🇦", continent: "Americas", hemisphere: "Northern", population: 39000000, area: 9984670, langFamily: "Germanic/Romance", anthemUrl: "anthemCA.mp3" },
       { name: "South Africa", code: "ZA", flag: "🇿🇦", continent: "Africa", hemisphere: "Southern", population: 60000000, area: 1221037, langFamily: "Bantu/Germanic", anthemUrl: "anthemZA.mp3" },
       { name: "Italy", code: "IT", flag: "🇮🇹", continent: "Europe", hemisphere: "Northern", population: 59000000, area: 301230, langFamily: "Romance", anthemUrl: "anthemIT.mp3" },
       { name: "Mexico", code: "MX", flag: "🇲🇽", continent: "Americas", hemisphere: "Northern", population: 129000000, area: 1964375, langFamily: "Romance", anthemUrl: "anthemMX.mp3" },
@@ -294,7 +295,7 @@
       { name: "Argentina", code: "AR", flag: "🇦🇷", continent: "Americas", hemisphere: "Southern", population: 46000000, area: 2780400, langFamily: "Romance", anthemUrl: "anthemAR.mp3" },
       { name: "China", code: "CN", flag: "🇨🇳", continent: "Asia", hemisphere: "Northern", population: 1411000000, area: 9596961, langFamily: "Sinitic", anthemUrl: "anthemCN.mp3" },
       { name: "Spain", code: "ES", flag: "🇪🇸", continent: "Europe", hemisphere: "Northern", population: 48000000, area: 505992, langFamily: "Romance", anthemUrl: "anthemES.mp3" },
-      { name: "Nigeria", code: "NG", flag: "🇳🇬", continent: "Africa", hemisphere: "Northern", population: 224000000, area: 923768, langFamily: "Benue", anthemUrl: "anthemNG.mp3" },
+      { name: "Nigeria", code: "NG", flag: "🇳🇬", continent: "Africa", hemisphere: "Northern", population: 224000000, area: 923768, langFamily: "Benue-Congo", anthemUrl: "anthemNG.mp3" },
       { name: "Turkey", code: "TR", flag: "🇹🇷", continent: "Europe/Asia", hemisphere: "Northern", population: 85000000, area: 783562, langFamily: "Turkic", anthemUrl: "anthemTR.mp3" },
       { name: "Greece", code: "GR", flag: "🇬🇷", continent: "Europe", hemisphere: "Northern", population: 10400000, area: 131957, langFamily: "Hellenic", anthemUrl: "anthemGR.mp3" },
       { name: "Sweden", code: "SE", flag: "🇸🇪", continent: "Europe", hemisphere: "Northern", population: 10500000, area: 450295, langFamily: "Germanic", anthemUrl: "anthemSE.mp3" },
@@ -302,15 +303,15 @@
       { name: "Finland", code: "FI", flag: "🇫🇮", continent: "Europe", hemisphere: "Northern", population: 5600000, area: 338424, langFamily: "Finno-Ugric", anthemUrl: "anthemFI.mp3" },
       { name: "Norway", code: "NO", flag: "🇳🇴", continent: "Europe", hemisphere: "Northern", population: 5500000, area: 385207, langFamily: "Germanic", anthemUrl: "anthemNO.mp3" },
       { name: "Denmark", code: "DK", flag: "🇩🇰", continent: "Europe", hemisphere: "Northern", population: 5900000, area: 43094, langFamily: "Germanic", anthemUrl: "anthemDK.mp3" },
-      { name: "Belgium", code: "BE", flag: "🇧🇪", continent: "Europe", hemisphere: "Northern", population: 11700000, area: 30528, langFamily: "Germanic", anthemUrl: "anthemBE.mp3" },
+      { name: "Belgium", code: "BE", flag: "🇧🇪", continent: "Europe", hemisphere: "Northern", population: 11700000, area: 30528, langFamily: "Germanic/Romance", anthemUrl: "anthemBE.mp3" },
       { name: "Netherlands", code: "NL", flag: "🇳🇱", continent: "Europe", hemisphere: "Northern", population: 17800000, area: 41850, langFamily: "Germanic", anthemUrl: "anthemNL.mp3" },
       { name: "Austria", code: "AT", flag: "🇦🇹", continent: "Europe", hemisphere: "Northern", population: 9000000, area: 83871, langFamily: "Germanic", anthemUrl: "anthemAT.mp3" },
       { name: "Czechia", code: "CZ", flag: "🇨🇿", continent: "Europe", hemisphere: "Northern", population: 10500000, area: 78867, langFamily: "Slavic", anthemUrl: "anthemCZ.mp3" },
-      { name: "Hungary", code: "HU", flag: "🇭🇺", continent: "Europe", hemisphere: "Northern", population: 9600000, area: 93030, langFamily: "Ugric", anthemUrl: "anthemHU.mp3" },
+      { name: "Hungary", code: "HU", flag: "🇭🇺", continent: "Europe", hemisphere: "Northern", population: 9600000, area: 93030, langFamily: "Finno-Ugric", anthemUrl: "anthemHU.mp3" },
       { name: "Slovakia", code: "SK", flag: "🇸🇰", continent: "Europe", hemisphere: "Northern", population: 5400000, area: 49035, langFamily: "Slavic", anthemUrl: "anthemSK.mp3" },
-      { name: "Romania", code: "RO", flag: "🇷🇴", continent: "Europe", hemisphere: "Northern", population: 19000000, area: 238397, langFamily: "Romance", anthemUrl: "https://tsmarty.xyz/anthemle/anthemRO.mp3" },
+      { name: "Romania", code: "RO", flag: "🇷🇴", continent: "Europe", hemisphere: "Northern", population: 19000000, area: 238397, langFamily: "Romance", anthemUrl: "anthemRO.mp3" },
       { name: "Ukraine", code: "UA", flag: "🇺🇦", continent: "Europe", hemisphere: "Northern", population: 38000000, area: 603500, langFamily: "Slavic", anthemUrl: "anthemUA.mp3" },
-      { name: "Ireland", code: "IE", flag: "🇮🇪", continent: "Europe", hemisphere: "Northern", population: 5100000, area: 70273, langFamily: "Germanic", anthemUrl: "anthemIE.mp3" },
+      { name: "Ireland", code: "IE", flag: "🇮🇪", continent: "Europe", hemisphere: "Northern", population: 5100000, area: 70273, langFamily: "Celtic/Germanic", anthemUrl: "anthemIE.mp3" },
       { name: "Portugal", code: "PT", flag: "🇵🇹", continent: "Europe", hemisphere: "Northern", population: 10400000, area: 92212, langFamily: "Romance", anthemUrl: "anthemPT.mp3" },
       { name: "Saudi Arabia", code: "SA", flag: "🇸🇦", continent: "Asia", hemisphere: "Northern", population: 36000000, area: 2149690, langFamily: "Semitic", anthemUrl: "anthemSA.mp3" },
       { name: "Israel", code: "IL", flag: "🇮🇱", continent: "Asia", hemisphere: "Northern", population: 9800000, area: 20770, langFamily: "Semitic", anthemUrl: "anthemIL.mp3" },
@@ -319,14 +320,14 @@
       { name: "Thailand", code: "TH", flag: "🇹🇭", continent: "Asia", hemisphere: "Northern", population: 71000000, area: 513120, langFamily: "Kra-Dai", anthemUrl: "anthemTH.mp3" },
       { name: "Pakistan", code: "PK", flag: "🇵🇰", continent: "Asia", hemisphere: "Northern", population: 240000000, area: 796095, langFamily: "Indo-Aryan", anthemUrl: "anthemPK.mp3" },
       { name: "Vietnam", code: "VN", flag: "🇻🇳", continent: "Asia", hemisphere: "Northern", population: 98000000, area: 331210, langFamily: "Vietic", anthemUrl: "anthemVN.mp3" },
-      { name: "Singapore", code: "SG", flag: "🇸🇬", continent: "Asia", hemisphere: "Northern", population: 6000000, area: 728, langFamily: "Polynesian", anthemUrl: "anthemSG.mp3" },
-      { name: "Malaysia", code: "MY", flag: "🇲🇾", continent: "Asia", hemisphere: "Northern", population: 34000000, area: 330803, langFamily: "Polynesian", anthemUrl: "anthemMY.mp3" },
-      { name: "Indonesia", code: "ID", flag: "🇮🇩", continent: "Asia", hemisphere: "Southern", population: 277000000, area: 1904569, langFamily: "Polynesian", anthemUrl: "anthemID.mp3" },
-      { name: "Philippines", code: "PH", flag: "🇵🇭", continent: "Asia", hemisphere: "Northern", population: 115000000, area: 300000, langFamily: "Polynesian", anthemUrl: "anthemPH.mp3" }
+      { name: "Singapore", code: "SG", flag: "🇸🇬", continent: "Asia", hemisphere: "Northern", population: 6000000, area: 728, langFamily: "Sinitic/Malayo-Polynesian", anthemUrl: "anthemSG.mp3" },
+      { name: "Malaysia", code: "MY", flag: "🇲🇾", continent: "Asia", hemisphere: "Northern", population: 34000000, area: 330803, langFamily: "Malayo-Polynesian", anthemUrl: "anthemMY.mp3" },
+      { name: "Indonesia", code: "ID", flag: "🇮🇩", continent: "Asia", hemisphere: "Southern", population: 277000000, area: 1904569, langFamily: "Malayo-Polynesian", anthemUrl: "anthemID.mp3" },
+      { name: "Philippines", code: "PH", flag: "🇵🇭", continent: "Asia", hemisphere: "Northern", population: 115000000, area: 300000, langFamily: "Malayo-Polynesian", anthemUrl: "anthemPH.mp3" }
     ];
 
-    const TIME_LIMITS = [2, 3, 5, 10, 15, 30, 40, 60, 80, 100];
-    const MAX_GUESSES = 10;
+    const TIME_LIMITS = [1, 3, 5, 10, 15, 30];
+    const MAX_GUESSES = 6;
 
     // Game Core State Variables
     let gameMode = "classic"; // "classic" or "unlimited"
@@ -358,8 +359,6 @@
     const suggestionsMenu = document.getElementById("suggestions-menu");
     const inputContainer = document.getElementById("input-container");
     const btnAllCountries = document.getElementById("btn-all-countries");
-    const btnAudioTroubleshoot = document.getElementById("btn-audio-troubleshoot");
-    const btnAudioDirectPlay = document.getElementById("btn-audio-direct-play");
     const gameOverCard = document.getElementById("game-over-card");
     const gameOverEmoji = document.getElementById("game-over-emoji");
     const gameOverTitle = document.getElementById("game-over-title");
@@ -380,7 +379,7 @@
     // Start App Setup
     window.addEventListener("DOMContentLoaded", () => {
       // Load streak progress
-      const savedStreak = localStorage.getItem("anthemle_streak_val_v4");
+      const savedStreak = localStorage.getItem("anthemle_streak_val_v5");
       if (savedStreak) {
         streak = parseInt(savedStreak, 10);
         streakCounter.textContent = streak;
@@ -392,6 +391,11 @@
       registerEvents();
       buildCountriesList();
     });
+
+    function getTodayString() {
+      const d = new Date();
+      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    }
 
     // Custom non-blocking Toast messages
     function showToast(message) {
@@ -452,7 +456,7 @@
       });
     }
 
-    // Explicit User Trigger Event Handler for strictly sandboxed environments
+    // Explicit User Trigger Event Handler
     function toggleAudioPlayback() {
       if (!targetCountry || !targetCountry.anthemUrl) {
         showToast("Audio stream source not initialized!");
@@ -467,7 +471,6 @@
         loadingSpinner.classList.remove("hidden");
         playIcon.classList.add("hidden");
 
-        // IMPORTANT FIX: Re-write the src directly inside the click event to preserve browser authorization
         audio.src = targetCountry.anthemUrl;
         audio.load();
 
@@ -489,19 +492,6 @@
       }
     }
 
-    // Fast direct play fallback for rigid devices
-    function playDirectFallback() {
-      if (targetCountry && targetCountry.anthemUrl) {
-        const tempAudio = new Audio(targetCountry.anthemUrl);
-        tempAudio.play().then(() => {
-          showToast("Fallback stream initialized!");
-          setTimeout(() => { tempAudio.pause(); }, 5000); // safety cap
-        }).catch(() => {
-          openDirectAudio();
-        });
-      }
-    }
-
     function stopAudioPlayback() {
       audio.pause();
       audio.currentTime = 0;
@@ -511,14 +501,7 @@
       loadingSpinner.classList.add("hidden");
       audioProgress.style.width = "0%";
       currentTimeLbl.textContent = "0:00";
-      audioStatusMsg.textContent = "Press play to listen.";
-    }
-
-    // Direct troubleshooting link logic
-    function openDirectAudio() {
-      if (targetCountry && targetCountry.anthemUrl) {
-        window.open(targetCountry.anthemUrl, '_blank');
-      }
+      audioStatusMsg.textContent = "Press play to listen. Incorrect guesses unlock up to 30 seconds!";
     }
 
     // Interactive Game Mechanics
@@ -530,16 +513,42 @@
       inputContainer.classList.remove("hidden");
       gameOverCard.classList.add("hidden");
 
+      const todayStr = getTodayString();
+
       if (gameMode === "classic") {
-        const today = new Date();
-        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        const seed = new Date().getFullYear() * 10000 + (new Date().getMonth() + 1) * 100 + new Date().getDate();
         const index = seed % COUNTRIES.length;
         targetCountry = COUNTRIES[index];
-        btnNext.classList.add("hidden");
+        
+        btnNext.classList.add("hidden"); // Never show "Play Again" in Classic
+        
+        // --- Daily Lock State Checking ---
+        let dailyDate = localStorage.getItem("anthemle_daily_date");
+        if (dailyDate !== todayStr) {
+          // It's a new day, clear previous daily status
+          localStorage.setItem("anthemle_daily_date", todayStr);
+          localStorage.setItem("anthemle_daily_guesses", JSON.stringify([]));
+          localStorage.setItem("anthemle_daily_status", "playing");
+        } else {
+          // Same day, check if they already played
+          const savedCodes = JSON.parse(localStorage.getItem("anthemle_daily_guesses") || "[]");
+          guesses = savedCodes.map(code => COUNTRIES.find(c => c.code === code)).filter(Boolean);
+          const status = localStorage.getItem("anthemle_daily_status") || "playing";
+          
+          if (status !== "playing") {
+             // Reconstruct their daily board and immediately show the finish screen
+             renderGuessesGrid();
+             updateGameDashboard();
+             finishGame(status === "won", true); // pass true so streak doesn't double count
+          }
+        }
+
       } else {
+        // Unlimited Mode
         const randomIndex = Math.floor(Math.random() * COUNTRIES.length);
         targetCountry = COUNTRIES[randomIndex];
-        btnNext.classList.remove("hidden");
+        btnNext.classList.remove("hidden"); // Allow "Play Again" in Unlimited
+        btnNext.textContent = "🔄 Play Unlimited Again";
       }
 
       // Pre-load the track
@@ -611,13 +620,19 @@
       suggestionsMenu.classList.add("hidden");
       stopAudioPlayback();
 
+      // Save to local storage if playing classic
+      if (gameMode === "classic") {
+        const savedCodes = guesses.map(g => g.code);
+        localStorage.setItem("anthemle_daily_guesses", JSON.stringify(savedCodes));
+      }
+
       renderGuessesGrid();
       updateGameDashboard();
 
       if (country.name === targetCountry.name) {
-        finishGame(true);
+        finishGame(true, false);
       } else if (guesses.length >= MAX_GUESSES) {
-        finishGame(false);
+        finishGame(false, false);
       } else {
         showToast("Incorrect country! Clues updated.");
       }
@@ -698,25 +713,43 @@
     }
 
     // End Game Screen Handler
-    function finishGame(won) {
+    function finishGame(won, isReplay) {
       inputContainer.classList.add("hidden");
       gameOverCard.classList.remove("hidden");
+
+      if (!isReplay) {
+        if (gameMode === "classic") {
+          localStorage.setItem("anthemle_daily_status", won ? "won" : "lost");
+          
+          if (won) {
+            streak++;
+            showToast("Correct! Daily Streak increased!");
+          } else {
+            streak = 0;
+            showToast(`Target was: ${targetCountry.name}`);
+          }
+          localStorage.setItem("anthemle_streak_val_v5", streak);
+
+        } else {
+          // Unlimited Mode
+          if (won) {
+            showToast("Correct! (Unlimited mode doesn't affect streak)");
+          } else {
+            showToast(`Target was: ${targetCountry.name}`);
+          }
+        }
+      }
+
+      streakCounter.textContent = streak;
+      streakBannerVal.textContent = streak;
 
       if (won) {
         gameOverEmoji.textContent = "🏆";
         gameOverTitle.textContent = "Victory! Anthem Identified!";
-        streak++;
-        showToast("Correct! Streak increased!");
       } else {
         gameOverEmoji.textContent = "😢";
         gameOverTitle.textContent = "Out of Retries!";
-        streak = 0;
-        showToast(`Target was: ${targetCountry.name}`);
       }
-
-      localStorage.setItem("anthemle_streak_val_v4", streak);
-      streakCounter.textContent = streak;
-      streakBannerVal.textContent = streak;
 
       gameOverFlag.textContent = targetCountry.flag;
       gameOverCountryName.textContent = targetCountry.name;
@@ -726,7 +759,7 @@
     function shareGridResults() {
       let gridText = `🎵 Anthemle (${gameMode}) - ${guesses.length}/${MAX_GUESSES}\n`;
       guesses.forEach(g => {
-        const cMatch = g.continent === targetCountry.continent ? "🟩" : "whitespace-normal 🟥";
+        const cMatch = g.continent === targetCountry.continent ? "🟩" : "🟥";
         const hMatch = g.hemisphere === targetCountry.hemisphere ? "🟩" : "🟥";
         
         let pMatch = "🟥";
@@ -800,10 +833,6 @@
 
       // Play click trigger
       btnPlay.addEventListener("click", toggleAudioPlayback);
-
-      // Troubleshooter manual open
-      btnAudioTroubleshoot.addEventListener("click", openDirectAudio);
-      btnAudioDirectPlay.addEventListener("click", playDirectFallback);
 
       // Autocomplete actions
       countryInput.addEventListener("input", updateSuggestions);
